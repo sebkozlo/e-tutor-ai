@@ -1,0 +1,5 @@
+services:
+  backend_ai:
+    build: backend_ai
+    ports:
+      - '8000:8000'

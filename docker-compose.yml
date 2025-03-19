@@ -1,5 +1,9 @@
 services:
   backend_ai:
-    build: backend_ai
+    container_name: backend_ai
+    build:
+      context: backend_ai
+      dockerfile: Dockerfile
     ports:
       - '8000:8000'
+    env_file: backend_ai/.env

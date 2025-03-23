@@ -20,28 +20,18 @@ class QuizRequestSchema(Schema):
 class BaseQuestionSchema(Schema):
     question: str
     question_type: str
-
-class MultiChoiceQuestionSchema(BaseQuestionSchema):
     options: List[str]
     correct_answer: List[str]
-
-class SingleChoiceQuestionSchema(BaseQuestionSchema):
-    options: List[str]
-    correct_answer: str
-
-
-class FillInTheBlankQuestion(BaseQuestionSchema):
-    correct_answer: List[str]
-
-
-class OrderingQuestionSchema(BaseQuestionSchema):
-    options: List[str]
-    correct_order: List[str]
 
 
 class QuizResponseSchema(Schema):
-    questions: List[Union[OrderingQuestionSchema, FillInTheBlankQuestion, SingleChoiceQuestionSchema, MultiChoiceQuestionSchema]]
+    questions: List[BaseQuestionSchema]
 
 
-class SolutionSchema(Schema):
-    text: str
+class SolutionRequestSchema(BaseQuestionSchema):
+    question: str
+    solution_level: int = 1
+
+class SolutionResponseSchema(Schema):
+    solution: str
+

@@ -1,14 +1,13 @@
 import openai
 from django.conf import settings
-from .schemas import QuizResponseSchema, SolutionSchema
-
+from .schemas import QuizResponseSchema, SolutionResponseSchema
 
 
 openai.api_key = settings.OPENAI_API_KEY
 
 def generate_quiz(question_count, difficulty, question_type, content):
     response = openai.beta.chat.completions.parse(
-        model="gpt-4o-mini",
+        model="gpt-4o",
 
         messages=[
             {"role": "system",
@@ -40,22 +39,28 @@ def generate_quiz(question_count, difficulty, question_type, content):
 
         return response
     except Exception as e:
-        return []
+        return e
 
 
-def question_solution(question):
+def generate_solution(question, solution_level):
     response = openai.beta.chat.completions.parse(
-        model="gpt-4o-mini",
+        model="gpt-4o",
 
         messages=[
-            {"role": "system", "content": "Jesteś pomocnym asystentem w rozwiązywaniu problemów."},
+            {"role": "system",
+             "content": "Jesteś ekspertem w wielu dziedzinach wiedzy, takich jak programowanie, matematyka, nauki przyrodnicze, historia, geografia i inne. Twoim zadaniem jest udzielanie odpowiedzi na pytania w formacie JSON zgodnie z poziomem szczegółowości określonym przez 'solution_level'."},
             {"role": "user",
-             "content": f"Daj podpowiedz do pytania: {question}, ale dawaj bezpośredniej informacji jaka jest prawidłowa odpowiedź"}
-        ], response_format=SolutionSchema
+             "content": f"Odpowiedz na pytanie: {question}\n"
+                        f"Poziom podpowiedzi: {solution_level}\n"
+                        f"- solution_level = 1: Udziel krótkiej, ogólnej podpowiedzi naprowadzającej na odpowiedź, lecz nie podawaj bezpośredniej odpowiedzi.\n"
+                        f"- solution_level = 2: Udziel bardziej szczegółowej podpowiedzi, dokładniej tłumacząc kluczowe pojęcia, możesz pomóc wykluczyć jakąś z poponowanych odpowiedz jeśli taki istnieją w 'options', lecz nie podawaj bezpośredniej prawidłowej odpowiedzi.\n"
+                        f"- solution_level = 3: Wskaż prawidłową odpowiedź i dokładnie wyjaśnij, dlaczego jest poprawna.\n"
+                        "Odpowiedzi udzielaj w języku polskim."}
+        ], response_format=SolutionResponseSchema
     )
 
     try:
         return response.choices[0].message.parsed
 
     except Exception as e:
-        return []
+        return e

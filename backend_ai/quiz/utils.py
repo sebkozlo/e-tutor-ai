@@ -17,7 +17,7 @@ def generate_quiz(question_count, difficulty, question_type, content):
                         "Dla każdego pytania dopasuj odpowiedni schemat odpowiedzi.\n\n"
                         "- Pytania typu 'single' powinny zawierać jedno pytanie i jedno prawidłowe rozwiązanie (jedna opcja).\n"
                         "- Pytania typu 'multi' powinny zawierać jedno pytanie i 4 propozycje odpowiedzi i wiele poprawnych odpowiedzi (wielokrotny wybór) 'ChoiceQuestionSchema'. \n"
-                        "- Pytania typu 'fill' powinny zawierać pytanie z brakującym słowem, które użytkownik ma uzupełnić. Podaj odpowiedź jako brakujące słowo lub frazę.\n"
+                        "- Pytania typu 'fill' powinny zawierać pytania z brakującymi słowami, które użytkownik ma uzupełnić. Podaj odpowiedź jako listę brakujących słów lub frazę.\n"
                         "- Pytania typu 'ordering' powinny zawierać pytanie z zestawem opcji, które należy uporządkować we właściwej kolejności.\n\n"
                         "Upewnij się, że każde pytanie jest poprawnie przypisane do odpowiedniego typu, i że odpowiedzi są zgodne z typem pytania.\n\n"
                         "Odpowiednio zmapuj typy pytań 'question_type':"
@@ -25,7 +25,7 @@ def generate_quiz(question_count, difficulty, question_type, content):
                         "Przykłady pytań:\n"
                         "1. Pytanie typu 'single': 'Jakie jest stolica Polski? Odpowiedź: Warszawa'\n"
                         "2. Pytanie typu 'multi': 'Wybierz wszystkie stolice krajów europejskich: Warszawa, Moskwa, Tokio, Paryż'. Poprawne odpowiedzi: Warszawa, Moskwa, Paryż\n"
-                        "3. Pytanie typu 'fill': 'Polska ma stolicę w ____. Odpowiedź: Warszawa'\n"
+                        "3. Pytanie typu 'fill': W polu 'options: ['Polska ma stolicę w ____.' , 'Klasa bazowa w Javie nosi nazwę ____.'] Odpowiedź:  'correct_answer': ['Warszawa', 'Object']. W polu 'question' ma być tylko słowo 'Uzupełnij'. Liczba wyrazów do uzupełnienia jest zależna od 'difficulty', im wyższa wartość tym więcej wyrazów.\n"
                         "4. Pytanie typu 'ordering': 'Ułóż te miasta w kolejności alfabetycznej: 'Warszawa, Paryż, Londyn'. Poprawna kolejność: Londyn, Paryż, Warszawa.\n\n"
                         f"Proszę wygenerować pytania typu: {', '.join(question_type)}. Zapewnij, że każde pytanie będzie pasowało do jednego z tych typów."
                         "Odpowiedzi udzielaj w jezyku plskim"}

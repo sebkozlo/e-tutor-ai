@@ -4,7 +4,7 @@
 
 ```git clone ```
 
-2. W katalogu root (w katalogu root znajduje się plik ```manage.py```)utwórz plik ```.env``` kopiuj schemat z ```.env.example``` uzupełnij dane (klucze API, etc)
+2. W katalogu root (w katalogu root znajduje się plik ```manage.py```) utwórz plik ```.env``` kopiuj schemat z ```.env.example``` uzupełnij dane (klucze API, etc)
 
 
 3. Zbuduj obrazy Dockera:

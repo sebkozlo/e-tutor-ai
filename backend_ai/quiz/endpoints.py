@@ -2,6 +2,7 @@ from ninja import Router
 from .schemas import QuizRequestSchema, QuizResponseSchema, SolutionResponseSchema, SolutionRequestSchema
 from .utils import generate_quiz, generate_solution
 
+
 router = Router()
 
 @router.post("/generate", response=QuizResponseSchema, tags=['Quiz'])

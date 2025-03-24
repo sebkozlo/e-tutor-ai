@@ -1,6 +1,6 @@
 from enum import Enum
 from ninja import Schema
-from typing import List, Union
+from typing import List
 
 
 class QuestionType(str, Enum):
@@ -31,6 +31,7 @@ class QuizResponseSchema(Schema):
 class SolutionRequestSchema(BaseQuestionSchema):
     question: str
     solution_level: int = 1
+
 
 class SolutionResponseSchema(Schema):
     solution: str

@@ -15,6 +15,7 @@
 
 ```docker-compose up```
 
+
 Aplikacja będzie dostępna pod adresem: http://localhost:8000
 
 Dokumentacja API http://localhost:8000/api/docs

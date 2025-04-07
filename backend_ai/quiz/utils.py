@@ -1,3 +1,5 @@
+from http.client import responses
+
 import openai
 from django.conf import settings
 from .schemas import QuizResponseSchema, SolutionResponseSchema
@@ -6,38 +8,52 @@ from .schemas import QuizResponseSchema, SolutionResponseSchema
 openai.api_key = settings.OPENAI_API_KEY
 
 def generate_quiz(question_count, difficulty, question_type, content):
+    type_descriptions = {
+        "single": "- Pytania typu 'single' powinny zawierać jedno pytanie i jedno prawidłowe rozwiązanie (jedna opcja).\n",
+        "multi": "- Pytania typu 'multi' powinny zawierać jedno pytanie i 4 propozycje odpowiedzi i wiele poprawnych odpowiedzi (wielokrotny wybór).\n",
+        "fill": "- Pytania typu 'fill' powinny zawierać pytania z brakującymi słowami. Odpowiedź to lista brakujących słów lub fraz.\n",
+        "order": "- Pytania typu 'order' powinny zawierać opcje do uporządkowania we właściwej kolejności.\n"
+    }
+
+    examples = {
+        "single": "1. Pytanie typu 'single': 'Jakie jest stolica Polski? Odpowiedź: Warszawa'\n",
+        "multi": "2. Pytanie typu 'multi': 'Wybierz wszystkie stolice krajów europejskich: Warszawa, Moskwa, Tokio, Paryż'. Poprawne odpowiedzi: Warszawa, Moskwa, Paryż\n",
+        "fill": "3. Pytanie typu 'fill': Pytanie: 'Uzupełnij'. Options: ['Polska ma stolicę w ____.' , 'Klasa bazowa w Javie nosi nazwę ____'] Odpowiedź: ['Warszawa', 'Object']\n",
+        "order": "4. Pytanie typu 'order': 'Ułóż miasta w kolejności alfabetycznej: Warszawa, Paryż, Londyn'. Poprawna kolejność: Londyn, Paryż, Warszawa\n"
+    }
+
+    selected_descriptions = "".join([type_descriptions[t] for t in question_type])
+    selected_examples = "".join([examples[t] for t in question_type])
+    joined_types = ", ".join(question_type)
+
+    prompt = (
+        f"Wygeneruj {question_count} pytań na poziomie trudności {difficulty}/10 na temat: {content}.\n"
+        f"Pytania powinny być wyłącznie typu: {joined_types}.\n\n"
+        f"Dla każdego pytania dopasuj odpowiedni schemat odpowiedzi:\n"
+        f"{selected_descriptions}\n"
+        f"Upewnij się, że każde pytanie ma poprawnie ustawione pole 'question_type' i poprawne pole 'correct_answer'.\n\n"
+        f"Przykłady:\n{selected_examples}\n"
+        "Nie twórz pytań innych typów niż podane. Odpowiedzi udziel w języku polskim. Zwróć wynik jako JSON w polu 'quiz', zawierający listę pytań."
+    )
+
     response = openai.beta.chat.completions.parse(
         model="gpt-4o",
-
         messages=[
-            {"role": "system",
-             "content": "Jesteś pomocnym asystentem do generowania quizów. Twoim zadaniem jest stworzenie pytań w oparciu o określony typ, trudność i temat."},
-            {"role": "user",
-             "content": f"Wygeneruj {question_count} pytań na poziomie trudności {difficulty} z 10 na temat {content}. Pytania powinny być różnych typów, jak opisano poniżej. "
-                        "Dla każdego pytania dopasuj odpowiedni schemat odpowiedzi.\n\n"
-                        "- Pytania typu 'single' powinny zawierać jedno pytanie i jedno prawidłowe rozwiązanie (jedna opcja).\n"
-                        "- Pytania typu 'multi' powinny zawierać jedno pytanie i 4 propozycje odpowiedzi i wiele poprawnych odpowiedzi (wielokrotny wybór) 'ChoiceQuestionSchema'. \n"
-                        "- Pytania typu 'fill' powinny zawierać pytania z brakującymi słowami, które użytkownik ma uzupełnić. Podaj odpowiedź jako listę brakujących słów lub frazę.\n"
-                        "- Pytania typu 'ordering' powinny zawierać pytanie z zestawem opcji, które należy uporządkować we właściwej kolejności.\n\n"
-                        "Upewnij się, że każde pytanie jest poprawnie przypisane do odpowiedniego typu, i że odpowiedzi są zgodne z typem pytania.\n\n"
-                        "Odpowiednio zmapuj typy pytań 'question_type':"
-                        "'Multi Choice': 'multi', 'Fill In The Blank':'fill', 'Ordering':'ordering', 'Single Choice':'single;"
-                        "Przykłady pytań:\n"
-                        "1. Pytanie typu 'single': 'Jakie jest stolica Polski? Odpowiedź: Warszawa'\n"
-                        "2. Pytanie typu 'multi': 'Wybierz wszystkie stolice krajów europejskich: Warszawa, Moskwa, Tokio, Paryż'. Poprawne odpowiedzi: Warszawa, Moskwa, Paryż\n"
-                        "3. Pytanie typu 'fill': W polu 'options: ['Polska ma stolicę w ____.' , 'Klasa bazowa w Javie nosi nazwę ____.'] Odpowiedź:  'correct_answer': ['Warszawa', 'Object']. W polu 'question' ma być tylko słowo 'Uzupełnij'. Liczba wyrazów do uzupełnienia jest zależna od 'difficulty', im wyższa wartość tym więcej wyrazów.\n"
-                        "4. Pytanie typu 'ordering': 'Ułóż te miasta w kolejności alfabetycznej: 'Warszawa, Paryż, Londyn'. Poprawna kolejność: Londyn, Paryż, Warszawa.\n\n"
-                        f"Proszę wygenerować pytania typu: {', '.join(question_type)}. Zapewnij, że każde pytanie będzie pasowało do jednego z tych typów."
-                        "Odpowiedzi udzielaj w jezyku plskim"}
+            {"role": "system", "content": "Jesteś pomocnym asystentem do generowania quizów. Twoim zadaniem jest stworzenie pytań w oparciu o określony typ, trudność i temat."},
+            {"role": "user", "content": prompt}
         ], response_format=QuizResponseSchema
     )
 
     try:
-        print(response)
+        # print(response)
+        data = {
+            "_id": response.id,
+            "questions": response.choices[0].message.parsed
+        }
 
-        response = response.choices[0].message.parsed
-
-        return response
+        # response = response.choices[0].message.parsed
+        print(data)
+        return data
     except Exception as e:
         return e
 
@@ -64,3 +80,4 @@ def generate_solution(question, solution_level):
 
     except Exception as e:
         return e
+

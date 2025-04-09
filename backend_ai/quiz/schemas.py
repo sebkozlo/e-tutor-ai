@@ -1,9 +1,7 @@
-from enum import Enum
 from ninja import Schema
 from ninja import ModelSchema
-
-from .models import QuizRequest, Question
 from typing import List
+from .models import QuizRequest
 
 
 def to_camel(string: str) -> str:
@@ -11,45 +9,32 @@ def to_camel(string: str) -> str:
     return parts[0] + ''.join(word.capitalize() for word in parts[1:])
 
 
-class CamelModelSchema(Schema):
-    str_field_name: str
-    float_field_name: float
-
-    class Config(Schema.Config):
-        alias_generator = to_camel
-
-
-class QuizRequestSchema(ModelSchema):
-    class Config(Schema.Config):
-        model = QuizRequest
-        model_fields = ["question_count", "difficulty", "question_type", "content"]
-        alias_generator = to_camel
-        populate_by_name = True
-
-
-# class BaseQuestionSchema(ModelSchema):
-#     class Config(Schema.Config):
-#         model = Question
-#         model_fields = ["question", "question_type", "options", "correct_answer"]
-#         alias_generator = to_camel
-#         populate_by_name = True
-
-class BaseQuestionSchema(Schema):
+class QuizResponseSchema(Schema):
     question: str
     question_type: str
     options: List[str]
     correct_answer: List[str]
 
+    model_config = {
+        "alias_generator": to_camel,
+        "populate_by_name": True
+    }
 
-class QuizResponseSchema(Schema):
-    id: str
-    questions: List[BaseQuestionSchema]
 
-    class Config(Schema.Config):
+class QuizRequestSchema(ModelSchema):
+
+    class Config:
+        model = QuizRequest
+        model_fields = ["user_id", "question_count", "difficulty", "question_type", "content"]
         alias_generator = to_camel
+        populate_by_name = True
 
 
-class SolutionRequestSchema(BaseQuestionSchema):
+class QuizResponseListSchema(Schema):
+    questions: List[QuizResponseSchema]
+
+
+class SolutionRequestSchema(Schema):
     question: str
     solutionLevel: int = 1
 

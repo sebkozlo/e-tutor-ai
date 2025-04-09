@@ -2,7 +2,7 @@ from http.client import responses
 
 import openai
 from django.conf import settings
-from .schemas import QuizResponseSchema, SolutionResponseSchema
+from .schemas import QuizResponseListSchema, SolutionResponseSchema
 
 
 openai.api_key = settings.OPENAI_API_KEY
@@ -33,6 +33,7 @@ def generate_quiz(question_count, difficulty, question_type, content):
         f"{selected_descriptions}\n"
         f"Upewnij się, że każde pytanie ma poprawnie ustawione pole 'question_type' i poprawne pole 'correct_answer'.\n\n"
         f"Przykłady:\n{selected_examples}\n"
+        "Przy zadaniu typu 'Fill' z brakującymi wyrazami. Liczba takich zdań powinna wynosić 5."
         "Nie twórz pytań innych typów niż podane. Odpowiedzi udziel w języku polskim. Zwróć wynik jako JSON w polu 'quiz', zawierający listę pytań."
     )
 
@@ -41,15 +42,11 @@ def generate_quiz(question_count, difficulty, question_type, content):
         messages=[
             {"role": "system", "content": "Jesteś pomocnym asystentem do generowania quizów. Twoim zadaniem jest stworzenie pytań w oparciu o określony typ, trudność i temat."},
             {"role": "user", "content": prompt}
-        ], response_format=QuizResponseSchema
+        ], response_format=QuizResponseListSchema
     )
-    print(response)
+
     try:
-        data = {
-            "id": response.id,
-            "questions": response.choices[0].message.parsed.questions
-        }
-        return data
+        return response.choices[0].message.parsed
     except Exception as e:
         return e
 

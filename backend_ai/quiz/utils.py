@@ -1,5 +1,3 @@
-from http.client import responses
-
 import openai
 from django.conf import settings
 from .schemas import QuizResponseListSchema, SolutionResponseSchema

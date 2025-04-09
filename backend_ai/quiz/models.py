@@ -4,10 +4,10 @@ from django.contrib.postgres.fields import ArrayField
 
 
 class QuestionType(models.TextChoices):
-    SINGLE = 'Single'
-    MULTI = 'Multi'
-    FILL_IN_THE_BLANC= 'Fill'
-    ORDER = 'Order'
+    SINGLE = 'SINGLE'
+    MULTI = 'MULTI'
+    FILL_IN_THE_BLANC= 'FILL'
+    ORDER = 'ORDER'
 
 
 class QuizRequest(models.Model):

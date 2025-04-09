@@ -1,13 +1,20 @@
 from ninja import Router
-from .schemas import QuizRequestSchema, QuizResponseSchema, SolutionResponseSchema, SolutionRequestSchema
+from .schemas import QuizRequestSchema, SolutionResponseSchema, SolutionRequestSchema, QuizResponseSchema
 from .utils import generate_quiz, generate_solution
+from .models import QuizRequest
+
+
 
 
 router = Router()
 
-@router.post("/generate", response=QuizResponseSchema, tags=['Quiz'])
+@router.post("/generate",  response=QuizResponseSchema, tags=['Quiz'], by_alias=True)
 def generate_quiz_endpoint(request, payload: QuizRequestSchema):
     quiz = generate_quiz(payload.question_count, payload.difficulty, payload.question_type, payload.content)
+    # QuizRequest.objects.create(**payload.dict())
+    # QuizResponseSchema.objects.create(**quiz)
+    print(dict(QuizRequestSchema))
+    print(dict(QuizRequestSchema))
     return quiz
 
 

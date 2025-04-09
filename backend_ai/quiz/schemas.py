@@ -1,21 +1,38 @@
 from enum import Enum
 from ninja import Schema
+from ninja import ModelSchema
+
+from .models import QuizRequest, Question
 from typing import List
 
 
-class QuestionType(str, Enum):
-    single = 'single'
-    multi = 'multi'
-    fill_in_the_blank = 'fill'
-    ordering = 'ordering'
+def to_camel(string: str) -> str:
+    parts = string.split('_')
+    return parts[0] + ''.join(word.capitalize() for word in parts[1:])
 
 
-class QuizRequestSchema(Schema):
-    question_count: int
-    difficulty: int
-    question_type: List[QuestionType]
-    content: str
+class CamelModelSchema(Schema):
+    str_field_name: str
+    float_field_name: float
 
+    class Config(Schema.Config):
+        alias_generator = to_camel
+
+
+class QuizRequestSchema(ModelSchema):
+    class Config(Schema.Config):
+        model = QuizRequest
+        model_fields = ["question_count", "difficulty", "question_type", "content"]
+        alias_generator = to_camel
+        populate_by_name = True
+
+
+# class BaseQuestionSchema(ModelSchema):
+#     class Config(Schema.Config):
+#         model = Question
+#         model_fields = ["question", "question_type", "options", "correct_answer"]
+#         alias_generator = to_camel
+#         populate_by_name = True
 
 class BaseQuestionSchema(Schema):
     question: str
@@ -25,12 +42,16 @@ class BaseQuestionSchema(Schema):
 
 
 class QuizResponseSchema(Schema):
+    id: str
     questions: List[BaseQuestionSchema]
+
+    class Config(Schema.Config):
+        alias_generator = to_camel
 
 
 class SolutionRequestSchema(BaseQuestionSchema):
     question: str
-    solution_level: int = 1
+    solutionLevel: int = 1
 
 
 class SolutionResponseSchema(Schema):

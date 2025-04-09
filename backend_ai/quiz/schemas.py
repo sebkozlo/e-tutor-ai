@@ -36,8 +36,12 @@ class QuizResponseListSchema(Schema):
 
 class SolutionRequestSchema(Schema):
     question: str
-    solutionLevel: int = 1
+    solution_level: int = 1
 
+    model_config = {
+        "alias_generator": to_camel,
+        "populate_by_name": True
+    }
 
 class SolutionResponseSchema(Schema):
     solution: str

@@ -1,7 +1,7 @@
 from ninja import Schema
 from ninja import ModelSchema
 from typing import List
-from .models import QuizRequest
+from .models import QuizRequest, SolutionRequest
 
 
 def to_camel(string: str) -> str:
@@ -34,14 +34,14 @@ class QuizResponseListSchema(Schema):
     questions: List[QuizResponseSchema]
 
 
-class SolutionRequestSchema(Schema):
-    question: str
-    solution_level: int = 1
+class SolutionRequestSchema(ModelSchema):
 
-    model_config = {
-        "alias_generator": to_camel,
-        "populate_by_name": True
-    }
+    class Config:
+        model = SolutionRequest
+        model_fields = ["user_id", "question", "solution_level"]
+        alias_generator = to_camel
+        populate_by_name = True
+
 
 class SolutionResponseSchema(Schema):
     solution: str

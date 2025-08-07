@@ -5,8 +5,14 @@ from .models import QuizRequest, SolutionRequest
 
 
 def to_camel(string: str) -> str:
-    parts = string.split('_')
-    return parts[0] + ''.join(word.capitalize() for word in parts[1:])
+    parts = string.split("_")
+    return parts[0] + "".join(word.capitalize() for word in parts[1:])
+
+
+class QuizResponseSchemaGemini(Schema):
+    question: str
+    options: List[str]
+    correct_answer: List[str]
 
 
 class QuizResponseSchema(Schema):
@@ -15,19 +21,31 @@ class QuizResponseSchema(Schema):
     options: List[str]
     correct_answer: List[str]
 
-    model_config = {
-        "alias_generator": to_camel,
-        "populate_by_name": True
-    }
+    model_config = {"alias_generator": to_camel, "populate_by_name": True}
+
+
+class Quiz(Schema):
+    content: str
 
 
 class QuizRequestSchema(ModelSchema):
-
     class Config:
         model = QuizRequest
-        model_fields = ["user_id", "question_count", "difficulty", "question_type", "content"]
+        model_fields = [
+            "user_id",
+            "question_count",
+            "difficulty",
+            "question_type",
+            "content",
+        ]
         alias_generator = to_camel
         populate_by_name = True
+
+
+class QuizRequestListSchema(Schema):
+    items: List[QuizRequestSchema]
+
+    model_config = {"alias_generator": to_camel, "populate_by_name": True}
 
 
 class QuizResponseListSchema(Schema):
@@ -35,7 +53,6 @@ class QuizResponseListSchema(Schema):
 
 
 class SolutionRequestSchema(ModelSchema):
-
     class Config:
         model = SolutionRequest
         model_fields = ["user_id", "question", "solution_level"]
@@ -45,4 +62,3 @@ class SolutionRequestSchema(ModelSchema):
 
 class SolutionResponseSchema(Schema):
     solution: str
-

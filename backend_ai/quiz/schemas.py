@@ -60,5 +60,11 @@ class SolutionRequestSchema(ModelSchema):
         populate_by_name = True
 
 
+class SolutionRequestListSchema(Schema):
+    items: List[SolutionRequestSchema]
+
+    model_config = {"alias_generator": to_camel, "populate_by_name": True}
+
+
 class SolutionResponseSchema(Schema):
     solution: str

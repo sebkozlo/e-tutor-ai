@@ -1,5 +1,4 @@
-from django.views.decorators.http import require_http_methods
-from typing import Dict
+from typing import Dict, List
 from ninja import Router
 from .schemas import (
     QuizRequestSchema,
@@ -8,10 +7,11 @@ from .schemas import (
     SolutionRequestSchema,
     SolutionRequestListSchema,
     SolutionRequest,
-    QuizRequestListSchema
+    QuizRequestListSchema,
+    ChoiceSchema,
 )
 from .openai import generate_quiz, generate_solution
-from .models import QuizRequest
+from .models import QuizRequest, QuestionType, DifficultyLevels, Limits
 
 
 router = Router()
@@ -36,13 +36,33 @@ def question_solution_endpoint(request, payload: SolutionRequestSchema) -> Dict:
     return solution
 
 
-@router.get("/quiz-requests", response=QuizRequestListSchema, tags=["Quiz"], by_alias=True)
+@router.get(
+    "/quiz-requests", response=QuizRequestListSchema, tags=["Quiz"], by_alias=True
+)
 def get_all_quiz_request(request) -> Dict:
     qs = QuizRequest.objects.all()
     return {"items": list(qs)}
 
 
-@router.get("/solution-requests", response=SolutionRequestListSchema, tags=["Quiz"], by_alias=True)
+@router.get(
+    "/solution-requests",
+    response=SolutionRequestListSchema,
+    tags=["Quiz"],
+    by_alias=True,
+)
 def get_all_solution_request(request) -> Dict:
     qs = SolutionRequest.objects.all()
     return {"items": list(qs)}
+
+
+@router.get("/config", response=Dict[str, List], tags=["Quiz"], by_alias=True)
+def get_quiz_config(request) -> Dict:
+    question_types = [{"id": qt.value, "name": qt.label} for qt in QuestionType]
+    difficulty_levels = [{"id": dl.value, "name": dl.label} for dl in DifficultyLevels]
+    limits = [{"id": limit.value, "name": str(limit.value)} for limit in Limits]
+
+    return {
+        "questionTypes": question_types,
+        "difficultyLevels": difficulty_levels,
+        "limits": limits,
+    }

@@ -7,22 +7,32 @@ from import_export.admin import ImportExportModelAdmin
 class QuizRequestResource(resources.ModelResource):
     class Meta:
         model = QuizRequest
-        fields = ("user_id", "question_count", "difficulty", "question_type", "content")
+        fields = (
+            "id",
+            "user_id",
+            "question_count",
+            "difficulty",
+            "question_type",
+            "content",
+            "created_at"
+        )
 
 
 class QuizRequestAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = [
+        "id",
         "user_id",
         "question_count",
         "difficulty",
         "question_type",
         "content",
+        "created_at"
     ]
     search_fields = ["question_type", "content"]
 
 
 class SolutionRequestAdmin(admin.ModelAdmin):
-    list_display = ["user_id", "question", "solution_level"]
+    list_display = ["id", "user_id", "question", "solution_level", "created_at"]
 
 
 admin.site.register(QuizRequest, QuizRequestAdmin)

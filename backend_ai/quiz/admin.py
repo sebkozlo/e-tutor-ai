@@ -14,6 +14,7 @@ class QuizRequestResource(resources.ModelResource):
             "difficulty",
             "question_type",
             "content",
+            "created_at"
         )
 
 
@@ -25,12 +26,13 @@ class QuizRequestAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         "difficulty",
         "question_type",
         "content",
+        "created_at"
     ]
     search_fields = ["question_type", "content"]
 
 
 class SolutionRequestAdmin(admin.ModelAdmin):
-    list_display = ["id", "user_id", "question", "solution_level"]
+    list_display = ["id", "user_id", "question", "solution_level", "created_at"]
 
 
 admin.site.register(QuizRequest, QuizRequestAdmin)

@@ -9,6 +9,11 @@ def to_camel(string: str) -> str:
     return parts[0] + "".join(word.capitalize() for word in parts[1:])
 
 
+class ChoiceSchema(Schema):
+    id: str
+    name: str
+
+
 class QuizResponseSchemaGemini(Schema):
     question: str
     options: List[str]

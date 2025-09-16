@@ -1,6 +1,6 @@
 from ninja import Schema
 from ninja import ModelSchema
-from typing import List
+from typing import List, Optional
 from .models import QuizRequest, SolutionRequest
 
 
@@ -43,6 +43,7 @@ class QuizRequestSchema(ModelSchema):
             "question_type",
             "content",
         ]
+        file: Optional = None
         alias_generator = to_camel
         populate_by_name = True
 
@@ -73,3 +74,11 @@ class SolutionRequestListSchema(Schema):
 
 class SolutionResponseSchema(Schema):
     solution: str
+
+class UploadSuccess(Schema):
+    filename: str
+    size: int
+    message: str
+
+class ErrorResponse(Schema):
+    detail: str

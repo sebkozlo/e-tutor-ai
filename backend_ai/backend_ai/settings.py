@@ -56,6 +56,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
+    # "ninja.compatibility.files.fix_request_files_middleware"
 ]
 
 REST_FRAMEWORK = {

@@ -1,5 +1,6 @@
 from typing import Dict, List
-from ninja import Router
+from ninja import Router, File
+from ninja.files import UploadedFile
 from .schemas import (
     QuizRequestSchema,
     QuizResponseListSchema,
@@ -8,10 +9,12 @@ from .schemas import (
     SolutionRequestListSchema,
     SolutionRequest,
     QuizRequestListSchema,
-    ChoiceSchema,
+    UploadSuccess,
+    ErrorResponse,
 )
 from .openai import generate_quiz, generate_solution
 from .models import QuizRequest, QuestionType, DifficultyLevels, Limits
+
 
 
 router = Router()
@@ -37,7 +40,7 @@ def question_solution_endpoint(request, payload: SolutionRequestSchema) -> Dict:
 
 
 @router.get(
-    "/quiz-requests", response=QuizRequestListSchema, tags=["Quiz"], by_alias=True
+    "/quiz-requests", response={200: QuizRequestListSchema}, tags=["Quiz"], by_alias=True
 )
 def get_all_quiz_request(request) -> Dict:
     qs = QuizRequest.objects.all()
@@ -65,4 +68,24 @@ def get_quiz_config(request) -> Dict:
         "questionTypes": question_types,
         "difficultyLevels": difficulty_levels,
         "limits": limits,
+    }
+
+
+@router.post(
+    "/upload",
+    tags=["Quiz"],
+    response={200: UploadSuccess, 400: ErrorResponse, 413: ErrorResponse, 415: ErrorResponse}
+)
+def upload_file(request, file: File[UploadedFile] = None):
+    if not file:
+        return 400, {"detail": "No file uploaded."}
+    if file.content_type != "text/plain":
+        return 415, {"detail": "Invalid file type. Only text files are allowed."}
+    if file.size > 5 * 1024 * 1024:
+        return 413, {"detail": "File size exceeds the limit of 5MB."}
+
+    return {
+        "filename": file.name,
+        "size": file.size,
+        "message": "File uploaded successfully"
     }

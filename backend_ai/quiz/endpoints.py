@@ -89,3 +89,8 @@ def upload_file(request, file: File[UploadedFile] = None):
         "size": file.size,
         "message": "File uploaded successfully"
     }
+
+@router.get("/secure")
+def secure_endpoint(request):
+    return {"message": "This is a secure endpoint",
+            "user": str(request.auth)}

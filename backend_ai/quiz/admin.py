@@ -14,7 +14,7 @@ class QuizRequestResource(resources.ModelResource):
             "difficulty",
             "question_type",
             "content",
-            "created_at"
+            "created_at",
         )
 
 
@@ -26,7 +26,7 @@ class QuizRequestAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         "difficulty",
         "question_type",
         "content",
-        "created_at"
+        "created_at",
     ]
     search_fields = ["question_type", "content"]
 

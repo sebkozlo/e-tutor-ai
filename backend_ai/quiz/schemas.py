@@ -37,7 +37,6 @@ class QuizRequestSchema(ModelSchema):
     class Config:
         model = QuizRequest
         model_fields = [
-            "user_id",
             "question_count",
             "difficulty",
             "question_type",
@@ -61,7 +60,7 @@ class QuizResponseListSchema(Schema):
 class SolutionRequestSchema(ModelSchema):
     class Config:
         model = SolutionRequest
-        model_fields = ["user_id", "question", "solution_level"]
+        model_fields = ["question", "solution_level"]
         alias_generator = to_camel
         populate_by_name = True
 
@@ -75,10 +74,12 @@ class SolutionRequestListSchema(Schema):
 class SolutionResponseSchema(Schema):
     solution: str
 
+
 class UploadSuccess(Schema):
     filename: str
     size: int
     message: str
+
 
 class ErrorResponse(Schema):
     detail: str

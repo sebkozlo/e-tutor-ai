@@ -9,7 +9,6 @@ client = OpenAI()
 client.api_key = settings.OPENAI_API_KEY
 
 
-@shared_task
 def generate_quiz(
     question_count: int, difficulty: int, question_type: list[str], content: str
 ) -> Dict:
@@ -61,9 +60,9 @@ def generate_quiz(
 
 
 def generate_solution(question: str, solution_level: int) -> Dict:
-    response = openai.beta.chat.completions.parse(
+    response = client.responses.parse(
         model="gpt-4o",
-        messages=[
+        input=[
             {
                 "role": "system",
                 "content": "Jesteś ekspertem w wielu dziedzinach wiedzy, takich jak programowanie, matematyka, nauki przyrodnicze, historia, geografia i inne. Twoim zadaniem jest udzielanie odpowiedzi na pytania w formacie JSON zgodnie z poziomem szczegółowości określonym przez 'solution_level'.",
@@ -78,11 +77,11 @@ def generate_solution(question: str, solution_level: int) -> Dict:
                 "Odpowiedzi udzielaj w języku polskim.",
             },
         ],
-        response_format=SolutionResponseSchema,
+        text_format=SolutionResponseSchema,
     )
 
     try:
-        return response.choices[0].message.parsed
+        return response.output_parsed
 
     except Exception as e:
         return e

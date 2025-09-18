@@ -12,9 +12,8 @@ from .schemas import (
     UploadSuccess,
     ErrorResponse,
 )
-from .openai import generate_quiz, generate_solution
+from .services import generate_quiz, generate_solution
 from .models import QuizRequest, QuestionType, DifficultyLevels, Limits
-
 
 
 router = Router()
@@ -28,19 +27,22 @@ def generate_quiz_endpoint(request, payload: QuizRequestSchema) -> Dict:
         payload.question_type,
         payload.content,
     )
-    QuizRequest.objects.create(**payload.dict())
+    QuizRequest.objects.create(**payload.dict(), user_id=request.auth.get("userId"))
     return quiz
 
 
 @router.post("/solution", response=SolutionResponseSchema, tags=["Quiz"], by_alias=True)
 def question_solution_endpoint(request, payload: SolutionRequestSchema) -> Dict:
     solution = generate_solution(payload.question, payload.solution_level)
-    SolutionRequest.objects.create(**payload.dict())
+    SolutionRequest.objects.create(**payload.dict(), user_id=request.auth.get("userId"))
     return solution
 
 
 @router.get(
-    "/quiz-requests", response={200: QuizRequestListSchema}, tags=["Quiz"], by_alias=True
+    "/quiz-requests",
+    response={200: QuizRequestListSchema},
+    tags=["Quiz"],
+    by_alias=True,
 )
 def get_all_quiz_request(request) -> Dict:
     qs = QuizRequest.objects.all()
@@ -74,7 +76,12 @@ def get_quiz_config(request) -> Dict:
 @router.post(
     "/upload",
     tags=["Quiz"],
-    response={200: UploadSuccess, 400: ErrorResponse, 413: ErrorResponse, 415: ErrorResponse}
+    response={
+        200: UploadSuccess,
+        400: ErrorResponse,
+        413: ErrorResponse,
+        415: ErrorResponse,
+    },
 )
 def upload_file(request, file: File[UploadedFile] = None):
     if not file:
@@ -87,10 +94,10 @@ def upload_file(request, file: File[UploadedFile] = None):
     return {
         "filename": file.name,
         "size": file.size,
-        "message": "File uploaded successfully"
+        "message": "File uploaded successfully",
     }
 
-@router.get("/secure")
+
+@router.get("/secure", tags=["auth"])
 def secure_endpoint(request):
-    return {"message": "This is a secure endpoint",
-            "user": str(request.auth)}
+    return request.auth

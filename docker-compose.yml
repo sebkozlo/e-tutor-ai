@@ -3,10 +3,13 @@ services:
     container_name: backend_ai
     build:
       context: backend_ai
-      dockerfile: Dockerfile
+      dockerfile: docker/development/Dockerfile
     ports:
       - '8000:8000'
     env_file: backend_ai/.env
+    environment:
+      - RUN_MIGRATIONS=true
+      - CREATE_SUPERUSER=true
     depends_on:
       db:
         condition: service_healthy
@@ -24,7 +27,7 @@ services:
       - ./databases/postgres_data:/var/lib/postgresql/data
     env_file: backend_ai/.env
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -33,13 +36,19 @@ services:
     container_name: redis
     image: redis:8-alpine
     restart: always
+    ports:
+      - '6379:6379'
 
   celery:
     container_name: celery
     build:
       context: backend_ai
+      dockerfile: docker/development/Dockerfile
     command: celery --app=backend_ai worker -l INFO
     env_file: backend_ai/.env
+    environment:
+      - RUN_MIGRATIONS=false
+      - CREATE_SUPERUSER=false
     depends_on:
       db:
         condition: service_healthy
@@ -52,12 +61,15 @@ services:
     container_name: flower
     build:
       context: backend_ai
-    command: celery --app=backend_ai.celery_app flower
+      dockerfile: docker/development/Dockerfile
+    command: celery --app=backend_ai flower --address=0.0.0.0
     ports:
       - "5555:5555"
     volumes:
       - ./backend_ai:/app/
-    working_dir: /app
     env_file: backend_ai/.env
+    environment:
+      - RUN_MIGRATIONS=false
+      - CREATE_SUPERUSER=false
     depends_on:
       - celery

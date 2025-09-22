@@ -3,7 +3,7 @@ from openai import OpenAI
 from typing import Dict
 from django.conf import settings
 from .schemas import QuizResponseListSchema, SolutionResponseSchema
-
+import json
 
 client = OpenAI()
 client.api_key = settings.OPENAI_API_KEY
@@ -52,7 +52,7 @@ def generate_quiz(
         ],
         text_format=QuizResponseListSchema,
     )
-    print(response)
+    print(response.json())
     try:
         return response.output_parsed
     except Exception as e:

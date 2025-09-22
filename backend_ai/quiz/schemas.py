@@ -1,7 +1,7 @@
 from ninja import Schema
 from ninja import ModelSchema
 from typing import List, Optional
-from .models import QuizRequest, SolutionRequest
+from .models import Quiz, QuizSolution
 
 
 def to_camel(string: str) -> str:
@@ -14,12 +14,6 @@ class ChoiceSchema(Schema):
     name: str
 
 
-class QuizResponseSchemaGemini(Schema):
-    question: str
-    options: List[str]
-    correct_answer: List[str]
-
-
 class QuizResponseSchema(Schema):
     question: str
     question_type: str
@@ -29,13 +23,9 @@ class QuizResponseSchema(Schema):
     model_config = {"alias_generator": to_camel, "populate_by_name": True}
 
 
-class Quiz(Schema):
-    content: str
-
-
 class QuizRequestSchema(ModelSchema):
     class Config:
-        model = QuizRequest
+        model = Quiz
         model_fields = [
             "question_count",
             "difficulty",
@@ -47,10 +37,20 @@ class QuizRequestSchema(ModelSchema):
         populate_by_name = True
 
 
-class QuizRequestListSchema(Schema):
-    items: List[QuizRequestSchema]
-
-    model_config = {"alias_generator": to_camel, "populate_by_name": True}
+class QuizRequestOutSchema(ModelSchema):
+    class Config:
+        model = Quiz
+        model_fields = [
+            "id",
+            "user_id",
+            "question_count",
+            "difficulty",
+            "question_type",
+            "content",
+            "created_at",
+        ]
+        alias_generator = to_camel
+        populate_by_name = True
 
 
 class QuizResponseListSchema(Schema):
@@ -59,20 +59,22 @@ class QuizResponseListSchema(Schema):
 
 class SolutionRequestSchema(ModelSchema):
     class Config:
-        model = SolutionRequest
+        model = QuizSolution
         model_fields = ["question", "solution_level"]
         alias_generator = to_camel
         populate_by_name = True
 
 
-class SolutionRequestListSchema(Schema):
-    items: List[SolutionRequestSchema]
-
-    model_config = {"alias_generator": to_camel, "populate_by_name": True}
-
-
 class SolutionResponseSchema(Schema):
     solution: str
+
+
+class SolutionRequestOutSchema(ModelSchema):
+    class Config:
+        model = QuizSolution
+        model_fields = ["id", "user_id", "question", "solution_level", "created_at"]
+        alias_generator = to_camel
+        populate_by_name = True
 
 
 class UploadSuccess(Schema):

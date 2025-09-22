@@ -1,9 +1,129 @@
-from ninja import NinjaAPI
-from .endpoints import router
-from .auth import JWTAuth
+from typing import Dict, List
+from ninja import Router, File
+from ninja.errors import HttpError
+from ninja.files import UploadedFile
+from .schemas import (
+    QuizRequestSchema,
+    QuizResponseListSchema,
+    SolutionResponseSchema,
+    SolutionRequestSchema,
+    SolutionRequestOutSchema,
+    QuizSolution,
+    QuizRequestOutSchema,
+    UploadSuccess,
+    ErrorResponse,
+)
+from .services import generate_quiz, generate_solution
+from .models import Quiz, QuestionType, DifficultyLevels, Limits
+from ninja.pagination import PageNumberPagination, paginate
 
 
-api = NinjaAPI(title="e-TUTOR AI", version="1.0.0.", auth=JWTAuth())
+router = Router()
 
 
-api.add_router("/quiz", router)
+@router.post("/quizzes", response=QuizResponseListSchema, by_alias=True)
+def generate_quiz_endpoint(request, payload: QuizRequestSchema) -> Dict:
+    user_id = request.auth.get("userId")
+    if not user_id:
+        raise HttpError(401, "Authentication required.")
+    quiz = generate_quiz(
+        payload.question_count,
+        payload.difficulty,
+        payload.question_type,
+        payload.content,
+    )
+    Quiz.objects.create(**payload.dict(), user_id=request.auth.get("userId"))
+    return quiz
+
+
+@router.get(
+    "/quizzes",
+    response=List[QuizRequestOutSchema],
+    tags=["Quiz"],
+    by_alias=True,
+)
+@paginate(PageNumberPagination, page_size=10, max_page_size=50)
+def get_all_quiz_request(request):
+    user_id = request.auth.get("userId")
+    if not user_id:
+        raise HttpError(401, "Authentication required.")
+
+    return Quiz.objects.filter(user_id=user_id).order_by("-created_at")
+
+
+@router.get("/quizzes/{quiz_id}", response=QuizRequestOutSchema, by_alias=True)
+def get_quiz_request_by_id(request, quiz_id: int) -> QuizRequestOutSchema:
+    user_id = request.auth.get("userId")
+
+    if not user_id:
+        raise HttpError(401, "Unauthorized")
+
+    try:
+        quiz_request = Quiz.objects.get(id=quiz_id, user_id=user_id)
+    except Quiz.DoesNotExist:
+        raise HttpError(404, "Quiz request not found.")
+    return quiz_request
+
+
+@router.post("/solutions", response=SolutionResponseSchema, tags=["Solution"], by_alias=True)
+def question_solution_endpoint(request, payload: SolutionRequestSchema) -> Dict:
+    solution = generate_solution(payload.question, payload.solution_level)
+    QuizSolution.objects.create(**payload.dict(), user_id=request.auth.get("userId"))
+    return solution
+
+
+@router.get(
+    "/solutions",
+    response=List[SolutionRequestOutSchema],
+    tags=["Solution"],
+    by_alias=True,
+)
+@paginate(PageNumberPagination, page_size=10, max_page_size=50)
+def get_all_solution_request(request) -> Dict:
+    user_id = request.auth.get("userId")
+    if not user_id:
+        raise HttpError(401, "Authentication required.")
+    return QuizSolution.objects.filter(user_id=user_id).order_by("-created_at")
+
+
+@router.get(
+    "/solutions/{solution_id}", response=SolutionRequestOutSchema, tags=["Solution"], by_alias=True
+)
+def get_solution_request_by_id(request, solution_id: int) -> SolutionRequestOutSchema:
+    user_id = request.auth.get("userId")
+    if not user_id:
+        raise HttpError(401, "Unauthorized")
+    try:
+        solution_request = QuizSolution.objects.get(id=solution_id, user_id=user_id)
+    except QuizSolution.DoesNotExist:
+        raise HttpError(404, "Solution request not found.")
+    return solution_request
+
+
+@router.get("/config", response=Dict[str, List], by_alias=True, tags=["Config"])
+def get_quiz_config(request) -> Dict:
+    question_types = [{"id": qt.value, "name": qt.label} for qt in QuestionType]
+    difficulty_levels = [{"id": dl.value, "name": dl.label} for dl in DifficultyLevels]
+    limits = [{"id": limit.value, "name": str(limit.value)} for limit in Limits]
+
+    return {
+        "questionTypes": question_types,
+        "difficultyLevels": difficulty_levels,
+        "limits": limits,
+    }
+
+
+@router.post("/uploads", response=UploadSuccess, tags=["Upload"], by_alias=True)
+def upload_file(request, file: File[UploadedFile] = None):
+    if not file:
+        raise HttpError(400, "No file uploaded.")
+    if file.content_type != "text/plain":
+        raise HttpError(415, "Invalid file type. Only text files are allowed.")
+    if file.size > 5 * 1024 * 1024:
+        raise HttpError(413, "File size exceeds the limit of 5MB.")
+
+    return {
+        "filename": file.name,
+        "size": file.size,
+        "message": "File uploaded successfully",
+    }

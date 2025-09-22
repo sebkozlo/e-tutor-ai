@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path
-from quiz.api import api
+from .api import api
 
 
-urlpatterns = [path("admin/", admin.site.urls), path("api/", api.urls)]
+urlpatterns = [path("admin/", admin.site.urls),
+               path("api/", api.urls )]

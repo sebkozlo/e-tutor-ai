@@ -1,12 +1,12 @@
 from django.contrib import admin
-from .models import QuizRequest, SolutionRequest
+from .models import Quiz, QuizSolution
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 
 
 class QuizRequestResource(resources.ModelResource):
     class Meta:
-        model = QuizRequest
+        model = Quiz
         fields = (
             "id",
             "user_id",
@@ -35,5 +35,5 @@ class SolutionRequestAdmin(admin.ModelAdmin):
     list_display = ["id", "user_id", "question", "solution_level", "created_at"]
 
 
-admin.site.register(QuizRequest, QuizRequestAdmin)
-admin.site.register(SolutionRequest, SolutionRequestAdmin)
+admin.site.register(Quiz, QuizRequestAdmin)
+admin.site.register(QuizSolution, SolutionRequestAdmin)

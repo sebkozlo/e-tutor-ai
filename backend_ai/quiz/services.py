@@ -10,35 +10,51 @@ client.api_key = settings.OPENAI_API_KEY
 
 
 def generate_quiz(
-    question_count: int, difficulty: int, question_type: list[str], content: str
+    question_count: int, difficulty: str, question_type: list[str], content: str
 ) -> Dict:
     type_descriptions = {
         "SINGLE": "- Pytania typu 'SINGLE' powinny zawierać jedno pytanie i jedno prawidłowe rozwiązanie (jedna opcja).\n",
         "MULTI": "- Pytania typu 'MULTI' powinny zawierać jedno pytanie i 4 propozycje odpowiedzi i wiele poprawnych odpowiedzi (wielokrotny wybór).\n",
         "FILL": "- Pytania typu 'FILL' powinny zawierać pytania z brakującymi słowami. Odpowiedź to lista brakujących słów lub fraz.\n",
         "ORDER": "- Pytania typu 'ORDER' powinny zawierać opcje do uporządkowania we właściwej kolejności.\n",
+        "TRUE_FALSE": "- Pytania typu 'TRUE_FALSE' powinny być w formie twierdzenia, na które odpowiedź to tylko 'PRAWDA' lub 'FAŁSZ'.\n",
     }
 
     examples = {
         "SINGLE": "1. Pytanie typu 'SINGLE': 'Jakie jest stolica Polski? Odpowiedź: Warszawa'\n",
-        "MULTI": "2. Pytanie typu 'Sulti': 'Wybierz wszystkie stolice krajów europejskich: Warszawa, Moskwa, Tokio, Paryż'. Poprawne odpowiedzi: Warszawa, Moskwa, Paryż\n",
+        "MULTI": "2. Pytanie typu 'MULTI': 'Wybierz wszystkie stolice krajów europejskich: Warszawa, Moskwa, Tokio, Paryż'. Poprawne odpowiedzi: Warszawa, Moskwa, Paryż\n",
         "FILL": "3. Pytanie typu 'FILL': Pytanie: 'Uzupełnij'. Options: ['Polska ma stolicę w ____.' , 'Klasa bazowa w Javie nosi nazwę ____'] Odpowiedź: ['Warszawa', 'Object']. \n",
         "ORDER": "4. Pytanie typu 'ORDER': 'Ułóż miasta w kolejności alfabetycznej: Warszawa, Paryż, Londyn'. Poprawna kolejność: Londyn, Paryż, Warszawa\n",
+        "TRUE_FALSE": "5. Pytanie typu 'TRUE_FALSE': 'Warszawa jest stolicą Polski'. Odpowiedź: PRAWDA\n",
+    }
+
+    difficulty_descriptions = {
+        "EASY": "Łatwy – proste pytania podstawowe, wymagające ogólnej wiedzy.",
+        "MEDIUM": "Średni – pytania wymagające pewnej wiedzy, ale nadal dostępne.",
+        "HARD": "Trudny – pytania szczegółowe, wymagające dobrej znajomości tematu.",
+        "EXPERT": "Ekspercki – pytania dla bardzo zaawansowanych, wymagające głębokiego zrozumienia.",
+        "MASTER": "Mistrzowski – pytania wyjątkowo trudne, często podchwytliwe, wymagające biegłości eksperckiej.",
     }
 
     selected_descriptions = "".join([type_descriptions[t] for t in question_type])
     selected_examples = "".join([examples[t] for t in question_type])
     joined_types = ", ".join(question_type)
 
+    difficulty_text = difficulty_descriptions.get(difficulty, difficulty)
+
     prompt = (
-        f"Wygeneruj {question_count} pytań na poziomie trudności {difficulty}/10 na temat: {content}.\n"
+        f"Wygeneruj {question_count} pytań na poziomie trudności {difficulty} "
+        f"({difficulty_text}) na temat: {content}.\n"
         f"Pytania powinny być wyłącznie typu: {joined_types}.\n\n"
         f"Dla każdego pytania dopasuj odpowiedni schemat odpowiedzi:\n"
         f"{selected_descriptions}\n"
-        f"Upewnij się, że każde pytanie ma poprawnie ustawione pole 'question_type' i poprawne pole 'correct_answer'.\n\n"
+        f"Upewnij się, że każde pytanie ma poprawnie ustawione pole 'question_type' "
+        f"i poprawne pole 'correct_answer'.\n\n"
         f"Przykłady:\n{selected_examples}\n"
-        "Przy zadaniu typu 'FILL' z brakującymi wyrazami. Liczba takich zdań powinna wynosić 5."
-        "Nie twórz pytań innych typów niż podane. Odpowiedzi udziel w języku polskim. Zwróć wynik jako JSON w polu 'quiz', zawierający listę pytań."
+        "Przy zadaniu typu 'FILL' liczba zdań do uzupełnienia powinna wynosić 5.\n"
+        "Nie twórz pytań innych typów niż podane. "
+        "Odpowiedzi udziel w języku polskim. "
+        "Zwróć wynik jako JSON w polu 'quiz', zawierający listę pytań."
     )
 
     response = client.responses.parse(
@@ -52,11 +68,12 @@ def generate_quiz(
         ],
         text_format=QuizResponseListSchema,
     )
-    print(response.json())
+
     try:
         return response.output_parsed
     except Exception as e:
         return e
+
 
 
 def generate_solution(question: str, solution_level: int) -> Dict:

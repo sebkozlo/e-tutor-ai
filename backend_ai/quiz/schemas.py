@@ -1,7 +1,8 @@
 from ninja import Schema
 from ninja import ModelSchema
 from typing import List, Optional
-from .models import Quiz, QuizSolution
+from pydantic import Field
+from .models import Quiz, QuizSolution, DifficultyLevels, QuestionType
 
 
 def to_camel(string: str) -> str:
@@ -24,6 +25,11 @@ class QuizResponseSchema(Schema):
 
 
 class QuizRequestSchema(ModelSchema):
+    difficulty: DifficultyLevels = Field(..., example="EASY")
+    question_type: List[QuestionType] = Field(..., example=["SINGLE", "MULTI"])
+    question_count: int = Field(..., example=5)
+    content: str = Field(..., example="Python programing language")
+
     class Config:
         model = Quiz
         model_fields = [

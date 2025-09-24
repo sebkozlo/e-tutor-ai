@@ -9,7 +9,7 @@ class QuestionType(models.TextChoices):
     MULTI = "MULTI"
     FILL_IN_THE_BLANC = "FILL"
     ORDER = "ORDER"
-    TRUE_FSALSE = "TRUE_FALSE"
+    TRUE_FALSE = "TRUE_FALSE"
 
 
 class DifficultyLevels(models.TextChoices):
@@ -52,7 +52,7 @@ class QuizSolution(models.Model):
     id = models.BigAutoField(primary_key=True)
     user_id = models.UUIDField(default=uuid.uuid4, editable=False)
     question = models.TextField()
-    solution_level = models.IntegerField(choices=SolutionLevels)
+    solution_level = models.IntegerField(choices=SolutionLevels.choices)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -89,5 +89,10 @@ class UploadSuccess(Schema):
     message: str
 
 
-class ErrorResponse(Schema):
-    detail: str
+class TaskResponseSchema(Schema):
+    status: str
+    message: str
+    data: Optional["QuizResponseListSchema"] = None
+    quiz_id: Optional[int] = None
+    error: Optional[str] = None
+    task_id: Optional[str] = None

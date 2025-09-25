@@ -11,9 +11,11 @@ from .schemas import (
     QuizSolution,
     QuizRequestOutSchema,
     UploadSuccess,
-    ErrorResponse,
+    TaskResponseSchema,
 )
-from .services import generate_quiz, generate_solution
+
+# from .services import generate_quiz, generate_solution
+from .tasks import generate_quiz_task
 from .models import Quiz, QuestionType, DifficultyLevels, Limits
 from ninja.pagination import PageNumberPagination, paginate
 
@@ -21,19 +23,60 @@ from ninja.pagination import PageNumberPagination, paginate
 router = Router()
 
 
-@router.post("/quizzes", response=QuizResponseListSchema, by_alias=True)
+@router.post("/quizzes", by_alias=True)
 def generate_quiz_endpoint(request, payload: QuizRequestSchema) -> Dict:
     user_id = request.auth.get("userId")
     if not user_id:
         raise HttpError(401, "Authentication required.")
-    quiz = generate_quiz(
+    task = generate_quiz_task.delay(
         payload.question_count,
         payload.difficulty,
         payload.question_type,
         payload.content,
+        user_id,
     )
+
     Quiz.objects.create(**payload.dict(), user_id=request.auth.get("userId"))
-    return quiz
+
+    return {
+        "task_id": task.id,
+        "status": "PENDING",
+        "message": "Quiz generation started",
+    }
+
+
+@router.get("/quizzes/result/{task_id}", by_alias=True)
+def get_quiz_result(request, task_id: str) -> Dict:
+    user_id = request.auth.get("userId")
+    if not user_id:
+        raise HttpError(401, "Authentication required.")
+
+    try:
+        result = generate_quiz_task.AsyncResult(task_id)
+        task_result = result.get()
+        if user_id != task_result.get("user_id"):
+            raise HttpError(403, "Forbidden: You do not have access to this task.")
+
+        if result.state == "PENDING":
+            return {
+                "status": "PENDING",
+                "message": "Quiz generation is still in progress.",
+            }
+        elif result.state == "FAILURE":
+            return {"status": "FAILURE", "message": str(result.info)}
+        elif result.state == "SUCCESS":
+            return {
+                "status": "SUCCESS",
+                "data": task_result,
+                "message": "Quiz generation completed successfully.",
+            }
+        else:
+            return {
+                "status": result.state,
+                "message": "Quiz generation is in progress.",
+            }
+    except Exception as e:
+        raise HttpError(500, f"An error occurred: {str(e)}")
 
 
 @router.get(
@@ -65,7 +108,9 @@ def get_quiz_request_by_id(request, quiz_id: int) -> QuizRequestOutSchema:
     return quiz_request
 
 
-@router.post("/solutions", response=SolutionResponseSchema, tags=["Solution"], by_alias=True)
+@router.post(
+    "/solutions", response=SolutionResponseSchema, tags=["Solution"], by_alias=True
+)
 def question_solution_endpoint(request, payload: SolutionRequestSchema) -> Dict:
     solution = generate_solution(payload.question, payload.solution_level)
     QuizSolution.objects.create(**payload.dict(), user_id=request.auth.get("userId"))
@@ -87,7 +132,10 @@ def get_all_solution_request(request) -> Dict:
 
 
 @router.get(
-    "/solutions/{solution_id}", response=SolutionRequestOutSchema, tags=["Solution"], by_alias=True
+    "/solutions/{solution_id}",
+    response=SolutionRequestOutSchema,
+    tags=["Solution"],
+    by_alias=True,
 )
 def get_solution_request_by_id(request, solution_id: int) -> SolutionRequestOutSchema:
     user_id = request.auth.get("userId")

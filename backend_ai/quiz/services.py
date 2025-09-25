@@ -1,6 +1,6 @@
 from celery import shared_task
 from openai import OpenAI
-from typing import Dict
+from typing import Dict, List
 from django.conf import settings
 from .schemas import QuizResponseListSchema, SolutionResponseSchema
 import json
@@ -68,12 +68,11 @@ def generate_quiz(
         ],
         text_format=QuizResponseListSchema,
     )
-
+    # print(response)
     try:
         return response.output_parsed
     except Exception as e:
         return e
-
 
 
 def generate_solution(question: str, solution_level: int) -> Dict:

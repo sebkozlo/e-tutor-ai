@@ -34,7 +34,12 @@ class Limits(models.IntegerChoices):
 class Quiz(models.Model):
     id = models.BigAutoField(primary_key=True)
     user_id = models.UUIDField(default=uuid.uuid4, editable=False)
-    question_count = models.IntegerField(validators=[MinValueValidator(Limits.MIN_QUESTIONS), MaxValueValidator(Limits.MAX_QUESTIONS)])
+    question_count = models.IntegerField(
+        validators=[
+            MinValueValidator(Limits.MIN_QUESTIONS),
+            MaxValueValidator(Limits.MAX_QUESTIONS),
+        ]
+    )
     difficulty = models.CharField(max_length=10, choices=DifficultyLevels.choices)
     question_type = ArrayField(
         models.CharField(max_length=100, choices=QuestionType.choices), blank=False
@@ -44,9 +49,10 @@ class Quiz(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['user_id']),
-            models.Index(fields=['-created_at']),
+            models.Index(fields=["user_id"]),
+            models.Index(fields=["-created_at"]),
         ]
+
 
 class QuizSolution(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -57,6 +63,19 @@ class QuizSolution(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['user_id']),
-            models.Index(fields=['-created_at']),
+            models.Index(fields=["user_id"]),
+            models.Index(fields=["-created_at"]),
+        ]
+
+
+class TokenUsage(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    user_id = models.UUIDField(default=uuid.uuid4, editable=False)
+    tokens_used = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["user_id"]),
+            models.Index(fields=["-created_at"]),
         ]

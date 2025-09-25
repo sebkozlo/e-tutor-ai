@@ -7,39 +7,91 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Quiz',
+            name="Quiz",
             fields=[
-                ('id', models.BigAutoField(primary_key=True, serialize=False)),
-                ('user_id', models.UUIDField(default=uuid.uuid4, editable=False)),
-                ('question_count', models.IntegerField(validators=[django.core.validators.MinValueValidator(1), django.core.validators.MaxValueValidator(50)])),
-                ('difficulty', models.CharField(choices=[('EASY', 'Easy'), ('MEDIUM', 'Medium'), ('HARD', 'Hard'), ('EXPERT', 'Expert'), ('MASTER', 'Master')], max_length=10)),
-                ('question_type', django.contrib.postgres.fields.ArrayField(base_field=models.CharField(choices=[('SINGLE', 'Single'), ('MULTI', 'Multi'), ('FILL', 'Fill In The Blanc'), ('ORDER', 'Order'), ('TRUE_FALSE', 'True False')], max_length=100), size=None)),
-                ('content', models.TextField()),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ("id", models.BigAutoField(primary_key=True, serialize=False)),
+                ("user_id", models.UUIDField(default=uuid.uuid4, editable=False)),
+                (
+                    "question_count",
+                    models.IntegerField(
+                        validators=[
+                            django.core.validators.MinValueValidator(1),
+                            django.core.validators.MaxValueValidator(50),
+                        ]
+                    ),
+                ),
+                (
+                    "difficulty",
+                    models.CharField(
+                        choices=[
+                            ("EASY", "Easy"),
+                            ("MEDIUM", "Medium"),
+                            ("HARD", "Hard"),
+                            ("EXPERT", "Expert"),
+                            ("MASTER", "Master"),
+                        ],
+                        max_length=10,
+                    ),
+                ),
+                (
+                    "question_type",
+                    django.contrib.postgres.fields.ArrayField(
+                        base_field=models.CharField(
+                            choices=[
+                                ("SINGLE", "Single"),
+                                ("MULTI", "Multi"),
+                                ("FILL", "Fill In The Blanc"),
+                                ("ORDER", "Order"),
+                                ("TRUE_FALSE", "True False"),
+                            ],
+                            max_length=100,
+                        ),
+                        size=None,
+                    ),
+                ),
+                ("content", models.TextField()),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'indexes': [models.Index(fields=['user_id'], name='quiz_quiz_user_id_283ae2_idx'), models.Index(fields=['-created_at'], name='quiz_quiz_created_aa0813_idx')],
+                "indexes": [
+                    models.Index(
+                        fields=["user_id"], name="quiz_quiz_user_id_283ae2_idx"
+                    ),
+                    models.Index(
+                        fields=["-created_at"], name="quiz_quiz_created_aa0813_idx"
+                    ),
+                ],
             },
         ),
         migrations.CreateModel(
-            name='QuizSolution',
+            name="QuizSolution",
             fields=[
-                ('id', models.BigAutoField(primary_key=True, serialize=False)),
-                ('user_id', models.UUIDField(default=uuid.uuid4, editable=False)),
-                ('question', models.TextField()),
-                ('solution_level', models.IntegerField(choices=[(1, 'Level 1'), (2, 'Level 2'), (3, 'Level 3')])),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ("id", models.BigAutoField(primary_key=True, serialize=False)),
+                ("user_id", models.UUIDField(default=uuid.uuid4, editable=False)),
+                ("question", models.TextField()),
+                (
+                    "solution_level",
+                    models.IntegerField(
+                        choices=[(1, "Level 1"), (2, "Level 2"), (3, "Level 3")]
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'indexes': [models.Index(fields=['user_id'], name='quiz_quizso_user_id_92dc5f_idx'), models.Index(fields=['-created_at'], name='quiz_quizso_created_4ef97a_idx')],
+                "indexes": [
+                    models.Index(
+                        fields=["user_id"], name="quiz_quizso_user_id_92dc5f_idx"
+                    ),
+                    models.Index(
+                        fields=["-created_at"], name="quiz_quizso_created_4ef97a_idx"
+                    ),
+                ],
             },
         ),
     ]

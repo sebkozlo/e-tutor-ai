@@ -27,6 +27,13 @@ OPENAI_API_KEY = env("OPENAI_API_KEY")
 SECRET_KEY = env("SECRET_KEY")
 
 JWT_SECRET = env("JWT_SECRET")
+
+# STRIPE_SECRET
+STRIPE_PUBLIC_KEY = env("STRIPE_PUBLIC_KEY")
+STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY")
+STRIPE_WEBHOOK_SECRET = env("STRIPE_WEBHOOK_SECRET")
+
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 
@@ -42,8 +49,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "corsheaders",
-    "quiz",
     "import_export",
+    "quiz",
+    'payments',
 ]
 
 MIDDLEWARE = [
@@ -135,3 +143,4 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://redis:6379/0")
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", "redis://redis:6379/0")
 CELERY_RESULT_EXPIRES = 3600
+

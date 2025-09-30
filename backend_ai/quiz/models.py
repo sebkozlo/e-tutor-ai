@@ -2,33 +2,7 @@ import uuid
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MinValueValidator, MaxValueValidator
-
-
-class QuestionType(models.TextChoices):
-    SINGLE = "SINGLE"
-    MULTI = "MULTI"
-    FILL_IN_THE_BLANC = "FILL"
-    ORDER = "ORDER"
-    TRUE_FALSE = "TRUE_FALSE"
-
-
-class DifficultyLevels(models.TextChoices):
-    EASY = "EASY"
-    MEDIUM = "MEDIUM"
-    HARD = "HARD"
-    EXPERT = "EXPERT"
-    MASTER = "MASTER"
-
-
-class SolutionLevels(models.IntegerChoices):
-    LEVEL_1 = 1
-    LEVEL_2 = 2
-    LEVEL_3 = 3
-
-
-class Limits(models.IntegerChoices):
-    MIN_QUESTIONS = 1
-    MAX_QUESTIONS = 50
+from core.enums import DifficultyLevels, QuestionType, SolutionLevels, Limits
 
 
 class Quiz(models.Model):

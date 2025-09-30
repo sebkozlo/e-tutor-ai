@@ -27,6 +27,13 @@ OPENAI_API_KEY = env("OPENAI_API_KEY")
 SECRET_KEY = env("SECRET_KEY")
 
 JWT_SECRET = env("JWT_SECRET")
+
+# STRIPE_SECRET
+STRIPE_PUBLIC_KEY = env("STRIPE_PUBLIC_KEY")
+STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY")
+STRIPE_WEBHOOK_SECRET = env("STRIPE_WEBHOOK_SECRET")
+
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 
@@ -41,9 +48,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "authentication",
+    "core",
     "corsheaders",
-    "quiz",
     "import_export",
+    "quiz",
+    "payments",
 ]
 
 MIDDLEWARE = [

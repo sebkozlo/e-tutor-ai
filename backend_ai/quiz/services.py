@@ -15,7 +15,14 @@ def generate_quiz(
     type_descriptions = {
         "SINGLE": "- Pytania typu 'SINGLE' powinny zawierać jedno pytanie i jedno prawidłowe rozwiązanie (jedna opcja).\n",
         "MULTI": "- Pytania typu 'MULTI' powinny zawierać jedno pytanie i 4 propozycje odpowiedzi i wiele poprawnych odpowiedzi (wielokrotny wybór).\n",
-        "FILL": "- Pytania typu 'FILL' powinny zawierać pytania z brakującymi słowami. Odpowiedź to lista brakujących słów lub fraz.\n",
+        "FILL": (
+            "- Pytania typu 'FILL' powinny zawierać 5 zdań z brakującymi słowami (oznaczonymi jako '____').\n"
+            "Każde pytanie musi zawierać pole 'options' z listą co najmniej 7–10 propozycji słów lub fraz, "
+            "w tym poprawne oraz mylące.\n"
+            "Pole 'correctAnswer' powinno zawierać listę poprawnych słów w odpowiedniej kolejności.\n"
+            "Propozycje w 'options' powinny zawierać zarówno poprawne, jak i fałszywe odpowiedzi, "
+            "tak aby użytkownik musiał wybrać właściwe spośród kilku możliwości.\n"
+        ),
         "ORDER": "- Pytania typu 'ORDER' powinny zawierać opcje do uporządkowania we właściwej kolejności.\n",
         "TRUE_FALSE": "- Pytania typu 'TRUE_FALSE' powinny być w formie twierdzenia, na które odpowiedź to tylko 'PRAWDA' lub 'FAŁSZ'.\n",
     }
@@ -23,7 +30,12 @@ def generate_quiz(
     examples = {
         "SINGLE": "1. Pytanie typu 'SINGLE': 'Jakie jest stolica Polski? Odpowiedź: Warszawa'\n",
         "MULTI": "2. Pytanie typu 'MULTI': 'Wybierz wszystkie stolice krajów europejskich: Warszawa, Moskwa, Tokio, Paryż'. Poprawne odpowiedzi: Warszawa, Moskwa, Paryż\n",
-        "FILL": "3. Pytanie typu 'FILL': Pytanie: 'Uzupełnij'. Options: ['Polska ma stolicę w ____.' , 'Klasa bazowa w Javie nosi nazwę ____'] Odpowiedź: ['Warszawa', 'Object']. \n",
+        "FILL": (
+            "3. Pytanie typu 'FILL':\n"
+            "Pytania: ['Polska ma stolicę w ____.' , 'Klasa bazowa w Javie nosi nazwę ____']\n"
+            "Options: ['Warszawa', 'Object', 'Berlin', 'Main', 'Tokio', 'Class', 'Paryż']\n"
+            "Odpowiedź: ['Warszawa', 'Object']\n"
+        ),
         "ORDER": "4. Pytanie typu 'ORDER': 'Ułóż miasta w kolejności alfabetycznej: Warszawa, Paryż, Londyn'. Poprawna kolejność: Londyn, Paryż, Warszawa\n",
         "TRUE_FALSE": "5. Pytanie typu 'TRUE_FALSE': 'Warszawa jest stolicą Polski'. Odpowiedź: PRAWDA\n",
     }
@@ -46,12 +58,14 @@ def generate_quiz(
         f"Wygeneruj {question_count} pytań na poziomie trudności {difficulty} "
         f"({difficulty_text}) na temat: {content}.\n"
         f"Pytania powinny być wyłącznie typu: {joined_types}.\n\n"
+        "Przy zadaniu typu 'FILL' liczba zdań do uzupełnienia powinna wynosić 5.\n"
+        "Pole 'options' MUSI być zawsze wypełnione i zawierać propozycje słów/fraz (część poprawnych, część mylących), "
+        "a 'correctAnswer' ma zawierać wyłącznie poprawne odpowiedzi w kolejności ich wystąpienia.\n\n"
         f"Dla każdego pytania dopasuj odpowiedni schemat odpowiedzi:\n"
         f"{selected_descriptions}\n"
         f"Upewnij się, że każde pytanie ma poprawnie ustawione pole 'question_type' "
         f"i poprawne pole 'correct_answer'.\n\n"
         f"Przykłady:\n{selected_examples}\n"
-        "Przy zadaniu typu 'FILL' liczba zdań do uzupełnienia powinna wynosić 5.\n"
         "Nie twórz pytań innych typów niż podane. "
         "Odpowiedzi udziel w języku polskim. "
         "Zwróć wynik jako JSON w polu 'quiz', zawierający listę pytań."
@@ -68,7 +82,6 @@ def generate_quiz(
         ],
         text_format=QuizResponseListSchema,
     )
-    # print(response)
     try:
         return response.output_parsed
     except Exception as e:
@@ -98,6 +111,5 @@ def generate_solution(question: str, solution_level: int) -> Dict:
 
     try:
         return response.output_parsed
-
     except Exception as e:
         return e

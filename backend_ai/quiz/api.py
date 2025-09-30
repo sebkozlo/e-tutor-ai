@@ -41,6 +41,7 @@ def generate_quiz_endpoint(request, payload: QuizRequestSchema) -> Dict:
     return {
         "task_id": task.id,
         "status": "PENDING",
+        "_link": f"/quizzes/result/{task.id}",
         "message": "Quiz generation started",
     }
 
@@ -58,7 +59,6 @@ def get_quiz_result(request, task_id: str) -> Dict:
             return {
                 "status": "PENDING",
                 "message": "Quiz generation is still in progress.",
-                "_link": f"/api/quizzes/result/{task_id}",
             }
         elif result.state == "FAILURE":
             return {"status": "FAILURE", "message": str(result.info)}

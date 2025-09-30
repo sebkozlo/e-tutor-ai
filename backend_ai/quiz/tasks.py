@@ -6,6 +6,7 @@ import time
 
 @shared_task
 def generate_quiz_task(question_count, difficulty, question_type, content, user_id):
+    time.sleep(20)
     try:
         quiz = generate_quiz(question_count, difficulty, question_type, content)
         return {"user_id": user_id, "data": quiz.dict()}

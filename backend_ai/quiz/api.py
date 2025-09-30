@@ -53,18 +53,19 @@ def get_quiz_result(request, task_id: str) -> Dict:
 
     try:
         result = generate_quiz_task.AsyncResult(task_id)
-        task_result = result.get()
-        if user_id != task_result.get("user_id"):
-            raise HttpError(403, "Forbidden: You do not have access to this task.")
 
         if result.state == "PENDING":
             return {
                 "status": "PENDING",
                 "message": "Quiz generation is still in progress.",
+                "_link": f"/api/quizzes/result/{task_id}",
             }
         elif result.state == "FAILURE":
             return {"status": "FAILURE", "message": str(result.info)}
         elif result.state == "SUCCESS":
+            task_result = result.result
+            if user_id != task_result.get("user_id"):
+                raise HttpError(403, "Forbidden: You do not have access to this task.")
             return {
                 "status": "SUCCESS",
                 "data": task_result,

@@ -4,19 +4,17 @@ from ninja.errors import HttpError
 from ninja.files import UploadedFile
 from .schemas import (
     QuizRequestSchema,
-    QuizResponseListSchema,
     SolutionResponseSchema,
     SolutionRequestSchema,
     SolutionRequestOutSchema,
-    QuizSolution,
     QuizRequestOutSchema,
     UploadSuccess,
-    TaskResponseSchema,
 )
 
-# from .services import generate_quiz, generate_solution
+
 from .tasks import generate_quiz_task
-from .models import Quiz, QuestionType, DifficultyLevels, Limits
+from .models import Quiz, QuizSolution, QuestionType, DifficultyLevels, Limits
+from core.models import ExternalUser
 from ninja.pagination import PageNumberPagination, paginate
 
 
@@ -24,19 +22,23 @@ router = Router()
 
 
 @router.post("/quizzes", by_alias=True)
-def generate_quiz_endpoint(request, payload: QuizRequestSchema) -> Dict:
-    user_id = request.auth.get("userId")
-    if not user_id:
+def generate_quiz_endpoint(request, payload: QuizRequestSchema):
+
+    external_uuid = request.auth.get("userId")
+    if not external_uuid:
         raise HttpError(401, "Authentication required.")
+
+    external_user, _ = ExternalUser.objects.get_or_create(external_id=external_uuid)
+
     task = generate_quiz_task.delay(
         payload.question_count,
         payload.difficulty,
         payload.question_type,
         payload.content,
-        user_id,
+        external_user.id,
     )
 
-    Quiz.objects.create(**payload.dict(), user_id=request.auth.get("userId"))
+    Quiz.objects.create(**payload.dict(), external_user=external_user)
 
     return {
         "task_id": task.id,
@@ -47,37 +49,24 @@ def generate_quiz_endpoint(request, payload: QuizRequestSchema) -> Dict:
 
 
 @router.get("/quizzes/result/{task_id}", by_alias=True)
-def get_quiz_result(request, task_id: str) -> Dict:
-    user_id = request.auth.get("userId")
-    if not user_id:
+def get_quiz_result(request, task_id: str):
+    external_uuid = request.auth.get("userId")
+    if not external_uuid:
         raise HttpError(401, "Authentication required.")
 
-    try:
-        result = generate_quiz_task.AsyncResult(task_id)
+    result = generate_quiz_task.AsyncResult(task_id)
 
-        if result.state == "PENDING":
-            return {
-                "status": "PENDING",
-                "message": "Quiz generation is still in progress.",
-            }
-        elif result.state == "FAILURE":
-            return {"status": "FAILURE", "message": str(result.info)}
-        elif result.state == "SUCCESS":
-            task_result = result.result
-            if user_id != task_result.get("user_id"):
-                raise HttpError(403, "Forbidden: You do not have access to this task.")
-            return {
-                "status": "SUCCESS",
-                "data": task_result,
-                "message": "Quiz generation completed successfully.",
-            }
-        else:
-            return {
-                "status": result.state,
-                "message": "Quiz generation is in progress.",
-            }
-    except Exception as e:
-        raise HttpError(500, f"An error occurred: {str(e)}")
+    if result.state == "PENDING":
+        return {"status": "PENDING", "message": "Quiz generation is still in progress."}
+    elif result.state == "FAILURE":
+        return {"status": "FAILURE", "message": str(result.info)}
+    elif result.state == "SUCCESS":
+        task_result = result.result
+        if external_uuid != task_result.get("external_user_id"):
+            raise HttpError(403, "Forbidden: You do not have access to this task.")
+        return {"status": "SUCCESS", "data": task_result, "message": "Quiz generation completed successfully."}
+    else:
+        return {"status": result.state, "message": "Quiz generation is in progress."}
 
 
 @router.get(
@@ -88,22 +77,22 @@ def get_quiz_result(request, task_id: str) -> Dict:
 )
 @paginate(PageNumberPagination, page_size=10, max_page_size=50)
 def get_all_quiz_request(request):
-    user_id = request.auth.get("userId")
-    if not user_id:
+    external_uuid = request.auth.get("userId")
+    if not external_uuid:
         raise HttpError(401, "Authentication required.")
 
-    return Quiz.objects.filter(user_id=user_id).order_by("-created_at")
+    return Quiz.objects.filter(external_user__external_id=external_uuid).order_by("-created_at")
 
 
 @router.get("/quizzes/{quiz_id}", response=QuizRequestOutSchema, by_alias=True)
 def get_quiz_request_by_id(request, quiz_id: int) -> QuizRequestOutSchema:
-    user_id = request.auth.get("userId")
+    external_uuid = request.auth.get("userId")
 
-    if not user_id:
+    if not external_uuid:
         raise HttpError(401, "Unauthorized")
 
     try:
-        quiz_request = Quiz.objects.get(id=quiz_id, user_id=user_id)
+        quiz_request = Quiz.objects.get(id=quiz_id, external_user__external_id=external_uuid)
     except Quiz.DoesNotExist:
         raise HttpError(404, "Quiz request not found.")
     return quiz_request

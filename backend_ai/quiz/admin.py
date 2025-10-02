@@ -9,7 +9,7 @@ class QuizRequestResource(resources.ModelResource):
         model = Quiz
         fields = (
             "id",
-            "user_id",
+            "external_user",
             "question_count",
             "difficulty",
             "question_type",
@@ -21,7 +21,7 @@ class QuizRequestResource(resources.ModelResource):
 class QuizRequestAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = [
         "id",
-        "user_id",
+        "external_user",
         "question_count",
         "difficulty",
         "question_type",
@@ -32,7 +32,7 @@ class QuizRequestAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
 
 class SolutionRequestAdmin(admin.ModelAdmin):
-    list_display = ["id", "user_id", "question", "solution_level", "created_at"]
+    list_display = ["id", "external_user", "question", "solution_level", "created_at"]
 
 
 admin.site.register(Quiz, QuizRequestAdmin)

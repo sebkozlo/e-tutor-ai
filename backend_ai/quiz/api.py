@@ -23,7 +23,6 @@ router = Router()
 
 @router.post("/quizzes", by_alias=True)
 def generate_quiz_endpoint(request, payload: QuizRequestSchema):
-
     external_uuid = request.auth.get("userId")
     if not external_uuid:
         raise HttpError(401, "Authentication required.")
@@ -64,7 +63,11 @@ def get_quiz_result(request, task_id: str):
         task_result = result.result
         if external_uuid != task_result.get("external_user_id"):
             raise HttpError(403, "Forbidden: You do not have access to this task.")
-        return {"status": "SUCCESS", "data": task_result, "message": "Quiz generation completed successfully."}
+        return {
+            "status": "SUCCESS",
+            "data": task_result,
+            "message": "Quiz generation completed successfully.",
+        }
     else:
         return {"status": result.state, "message": "Quiz generation is in progress."}
 
@@ -81,7 +84,9 @@ def get_all_quiz_request(request):
     if not external_uuid:
         raise HttpError(401, "Authentication required.")
 
-    return Quiz.objects.filter(external_user__external_id=external_uuid).order_by("-created_at")
+    return Quiz.objects.filter(external_user__external_id=external_uuid).order_by(
+        "-created_at"
+    )
 
 
 @router.get("/quizzes/{quiz_id}", response=QuizRequestOutSchema, by_alias=True)
@@ -92,7 +97,9 @@ def get_quiz_request_by_id(request, quiz_id: int) -> QuizRequestOutSchema:
         raise HttpError(401, "Unauthorized")
 
     try:
-        quiz_request = Quiz.objects.get(id=quiz_id, external_user__external_id=external_uuid)
+        quiz_request = Quiz.objects.get(
+            id=quiz_id, external_user__external_id=external_uuid
+        )
     except Quiz.DoesNotExist:
         raise HttpError(404, "Quiz request not found.")
     return quiz_request

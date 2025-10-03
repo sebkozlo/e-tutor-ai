@@ -8,7 +8,9 @@ from core.models import ExternalUser
 
 class Quiz(models.Model):
     id = models.BigAutoField(primary_key=True)
-    external_user = models.ForeignKey(ExternalUser, on_delete=models.CASCADE, related_name="quizzes")
+    external_user = models.ForeignKey(
+        ExternalUser, on_delete=models.CASCADE, related_name="quizzes"
+    )
     question_count = models.IntegerField(
         validators=[
             MinValueValidator(Limits.MIN_QUESTIONS),
@@ -31,7 +33,9 @@ class Quiz(models.Model):
 
 class QuizSolution(models.Model):
     id = models.BigAutoField(primary_key=True)
-    external_user = models.ForeignKey(ExternalUser, on_delete=models.CASCADE, related_name="quiz_solutions")
+    external_user = models.ForeignKey(
+        ExternalUser, on_delete=models.CASCADE, related_name="quiz_solutions"
+    )
     question = models.TextField()
     solution_level = models.IntegerField(choices=SolutionLevels.choices)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -45,7 +49,9 @@ class QuizSolution(models.Model):
 
 class TokenUsage(models.Model):
     id = models.BigAutoField(primary_key=True)
-    external_user = models.ForeignKey(ExternalUser, on_delete=models.CASCADE, related_name="token_usages")
+    external_user = models.ForeignKey(
+        ExternalUser, on_delete=models.CASCADE, related_name="token_usages"
+    )
     tokens_used = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
 

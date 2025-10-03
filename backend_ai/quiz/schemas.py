@@ -78,7 +78,13 @@ class SolutionResponseSchema(Schema):
 class SolutionRequestOutSchema(ModelSchema):
     class Config:
         model = QuizSolution
-        model_fields = ["id", "external_user", "question", "solution_level", "created_at"]
+        model_fields = [
+            "id",
+            "external_user",
+            "question",
+            "solution_level",
+            "created_at",
+        ]
         alias_generator = to_camel
         populate_by_name = True
 

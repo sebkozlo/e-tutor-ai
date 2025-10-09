@@ -1,6 +1,7 @@
 from pathlib import Path
 import environ
 import os
+from corsheaders.defaults import default_headers, default_methods
 
 
 env = environ.Env(
@@ -8,6 +9,7 @@ env = environ.Env(
     DEBUG=(bool, False),
     SECRET_KEY=(str, "secret_key"),
     ALLOWED_HOSTS=(list, ["*"]),
+    FRONTEND_ORIGINS=(list, ["http://localhost:5173", "http://127.0.0.1:5173"]),
 )
 
 
@@ -38,7 +40,7 @@ STRIPE_WEBHOOK_SECRET = env("STRIPE_WEBHOOK_SECRET")
 DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
-
+FRONTEND_ORIGINS = env.list("FRONTEND_ORIGINS")
 # Application definition
 
 INSTALLED_APPS = [
@@ -57,6 +59,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -64,7 +67,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     # "ninja.compatibility.files.fix_request_files_middleware"
 ]
@@ -75,6 +77,14 @@ REST_FRAMEWORK = {
 }
 
 ROOT_URLCONF = "backend_ai.urls"
+
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = FRONTEND_ORIGINS
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = list(default_headers) + ["authorization", "content-type"]
+CORS_ALLOW_METHODS = list(default_methods) + ["PATCH"]
+
+CSRF_TRUSTED_ORIGINS = FRONTEND_ORIGINS
 
 TEMPLATES = [
     {

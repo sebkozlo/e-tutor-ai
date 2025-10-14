@@ -78,5 +78,3 @@ services:
     image: stripe/stripe-cli
     command: listen --forward-to http://backend-ai:8000/api/payments/webhook/stripe/
     env_file: backend_ai/.env
-    volumes:
-      - ~/.config/stripe:/root/.config/stripe

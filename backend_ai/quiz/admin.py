@@ -1,24 +1,8 @@
 from django.contrib import admin
 from .models import Quiz, QuizSolution
-from import_export import resources
-from import_export.admin import ImportExportModelAdmin
 
 
-class QuizRequestResource(resources.ModelResource):
-    class Meta:
-        model = Quiz
-        fields = (
-            "id",
-            "external_user",
-            "question_count",
-            "difficulty",
-            "question_type",
-            "content",
-            "created_at",
-        )
-
-
-class QuizRequestAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+class QuizAdmin(admin.ModelAdmin):
     list_display = [
         "id",
         "external_user",
@@ -27,13 +11,15 @@ class QuizRequestAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         "question_type",
         "content",
         "created_at",
+        "token_usage__total_tokens",
     ]
     search_fields = ["question_type", "content"]
+    list_filter = ["difficulty", "created_at"]
 
 
-class SolutionRequestAdmin(admin.ModelAdmin):
+class SolutionAdmin(admin.ModelAdmin):
     list_display = ["id", "external_user", "question", "solution_level", "created_at"]
 
 
-admin.site.register(Quiz, QuizRequestAdmin)
-admin.site.register(QuizSolution, SolutionRequestAdmin)
+admin.site.register(Quiz, QuizAdmin)
+admin.site.register(QuizSolution, SolutionAdmin)

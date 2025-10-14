@@ -27,17 +27,13 @@ def generate_quiz_endpoint(request, payload: QuizRequestSchema):
     if not external_uuid:
         raise HttpError(401, "Authentication required.")
 
-    external_user, _ = ExternalUser.objects.get_or_create(external_id=external_uuid)
-
     task = generate_quiz_task.delay(
         payload.question_count,
         payload.difficulty,
         payload.question_type,
         payload.content,
-        external_user.id,
+        external_uuid,
     )
-
-    Quiz.objects.create(**payload.dict(), external_user=external_user)
 
     return {
         "task_id": task.id,
@@ -65,7 +61,7 @@ def get_quiz_result(request, task_id: str):
             raise HttpError(403, "Forbidden: You do not have access to this task.")
         return {
             "status": "SUCCESS",
-            "data": task_result,
+            "data": task_result.get("quiz"),
             "message": "Quiz generation completed successfully.",
         }
     else:
@@ -106,7 +102,11 @@ def get_quiz_request_by_id(request, quiz_id: int) -> QuizRequestOutSchema:
 
 
 @router.post(
-    "/solutions", response=SolutionResponseSchema, tags=["Solution"], by_alias=True
+    "/solutions",
+    response=SolutionResponseSchema,
+    tags=["Solution"],
+    by_alias=True,
+    deprecated=True,
 )
 def question_solution_endpoint(request, payload: SolutionRequestSchema) -> Dict:
     solution = generate_solution(payload.question, payload.solution_level)
@@ -119,6 +119,7 @@ def question_solution_endpoint(request, payload: SolutionRequestSchema) -> Dict:
     response=List[SolutionRequestOutSchema],
     tags=["Solution"],
     by_alias=True,
+    deprecated=True,
 )
 @paginate(PageNumberPagination, page_size=10, max_page_size=50)
 def get_all_solution_request(request) -> Dict:
@@ -133,6 +134,7 @@ def get_all_solution_request(request) -> Dict:
     response=SolutionRequestOutSchema,
     tags=["Solution"],
     by_alias=True,
+    deprecated=True,
 )
 def get_solution_request_by_id(request, solution_id: int) -> SolutionRequestOutSchema:
     user_id = request.auth.get("userId")

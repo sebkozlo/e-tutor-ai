@@ -4,15 +4,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('tokens', '0006_alter_tokenlimit_period_delete_tokenbalance'),
+        ("tokens", "0006_alter_tokenlimit_period_delete_tokenbalance"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='tokenlimit',
-            name='period',
-            field=models.CharField(choices=[('day', 'Day'), ('week', 'Week'), ('month', 'Month')], max_length=10, unique=True),
+            model_name="tokenlimit",
+            name="period",
+            field=models.CharField(
+                choices=[("day", "Day"), ("week", "Week"), ("month", "Month")],
+                max_length=10,
+                unique=True,
+            ),
         ),
     ]

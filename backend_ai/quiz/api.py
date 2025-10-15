@@ -14,7 +14,6 @@ from .schemas import (
 
 from .tasks import generate_quiz_task
 from .models import Quiz, QuizSolution, QuestionType, DifficultyLevels, Limits
-from core.models import ExternalUser
 from ninja.pagination import PageNumberPagination, paginate
 
 

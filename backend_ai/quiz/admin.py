@@ -2,6 +2,7 @@ from django.contrib import admin
 from .models import Quiz, QuizSolution
 
 
+@admin.register(Quiz)
 class QuizAdmin(admin.ModelAdmin):
     list_display = [
         "id",
@@ -17,9 +18,6 @@ class QuizAdmin(admin.ModelAdmin):
     list_filter = ["difficulty", "created_at"]
 
 
+@admin.register(QuizSolution)
 class SolutionAdmin(admin.ModelAdmin):
     list_display = ["id", "external_user", "question", "solution_level", "created_at"]
-
-
-admin.site.register(Quiz, QuizAdmin)
-admin.site.register(QuizSolution, SolutionAdmin)

@@ -70,15 +70,13 @@ class TokenLimit(models.Model):
         null=True,
         blank=True,
     )
-    period = models.CharField(
-        max_length=10, choices=PeriodicChoices.choices
-    )
+    period = models.CharField(max_length=10, choices=PeriodicChoices.choices)
     limit = models.IntegerField(default=1000)
 
     class Meta:
         verbose_name = "Token Limit"
         verbose_name_plural = "Token Limits"
-        unique_together = [['subscription_plan', 'period']]
+        unique_together = [["subscription_plan", "period"]]
 
     def __str__(self):
         plan_name = self.subscription_plan.name if self.subscription_plan else "Default"

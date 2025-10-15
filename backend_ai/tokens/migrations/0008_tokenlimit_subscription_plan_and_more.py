@@ -5,20 +5,25 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('subscriptions', '0001_initial'),
-        ('tokens', '0007_alter_tokenlimit_period'),
+        ("subscriptions", "0001_initial"),
+        ("tokens", "0007_alter_tokenlimit_period"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tokenlimit',
-            name='subscription_plan',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='token_limits', to='subscriptions.subscriptionplan'),
+            model_name="tokenlimit",
+            name="subscription_plan",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="token_limits",
+                to="subscriptions.subscriptionplan",
+            ),
         ),
         migrations.AlterUniqueTogether(
-            name='tokenlimit',
-            unique_together={('subscription_plan', 'period')},
+            name="tokenlimit",
+            unique_together={("subscription_plan", "period")},
         ),
     ]

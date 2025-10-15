@@ -45,12 +45,13 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "corsheaders",
-    # apps
+    # my apps
     "authentication",
     "core",
-    "import_export",
     "quiz",
+    "tokens",
     "payments",
+    "subscriptions",
     "customers",
 ]
 

@@ -1,12 +1,7 @@
 from django.db import models
 from core.models import ExternalUser
-
-
-class TokenBalance(models.Model):
-    external_user = models.ForeignKey(
-        ExternalUser, on_delete=models.CASCADE, related_name="token_balances"
-    )
-    balance = models.IntegerField(default=0)
+from django.utils import timezone
+from core.enums import PeriodicChoices
 
 
 class TokenUsage(models.Model):
@@ -18,15 +13,73 @@ class TokenUsage(models.Model):
     total_tokens = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    @property
-    def day_usage(self):
-        from django.utils import timezone
-        from datetime import timedelta
-
-        start_of_day = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
-        return (
-            TokenUsage.objects.filter(
-                external_user=self.external_user, created_at__gte=start_of_day
-            ).aggregate(models.Sum("total_tokens"))["total_tokens__sum"]
-            or 0
+    @classmethod
+    def get_usage_since(cls, external_user, start_time, limit=None):
+        result = cls.objects.filter(
+            external_user=external_user, created_at__gte=start_time
+        ).aggregate(
+            total=models.Sum(models.F("input_tokens") + models.F("output_tokens"))
         )
+        return result["total"] or 0
+
+    @classmethod
+    def get_day_usage(cls, external_user, limit=None):
+        start_of_day = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        return cls.get_usage_since(external_user, start_of_day, limit)
+
+    @classmethod
+    def get_week_usage(cls, external_user, limit=None):
+        today = timezone.now()
+        start_of_week = today - timezone.timedelta(days=today.weekday())
+        start_of_week = start_of_week.replace(hour=0, minute=0, second=0, microsecond=0)
+        return cls.get_usage_since(external_user, start_of_week, limit)
+
+    @classmethod
+    def get_month_usage(cls, external_user, limit=None):
+        start_of_month = timezone.now().replace(
+            day=1, hour=0, minute=0, second=0, microsecond=0
+        )
+        return cls.get_usage_since(external_user, start_of_month, limit)
+
+    @classmethod
+    def check_limit(cls, external_user, period):
+        usage_method = {
+            PeriodicChoices.DAY: cls.get_day_usage,
+            PeriodicChoices.WEEK: cls.get_week_usage,
+            PeriodicChoices.MONTH: cls.get_month_usage,
+        }
+
+        usage = usage_method[period](external_user)
+
+        try:
+            limit_obj = TokenLimit.objects.get(period=period)
+            limit = limit_obj.limit
+            exceeded = usage > limit
+        except TokenLimit.DoesNotExist:
+            limit = None
+            exceeded = False
+
+        return usage, limit, exceeded
+
+
+class TokenLimit(models.Model):
+    subscription_plan = models.ForeignKey(
+        "subscriptions.SubscriptionPlan",
+        on_delete=models.CASCADE,
+        related_name="token_limits",
+        null=True,
+        blank=True,
+    )
+    period = models.CharField(
+        max_length=10, choices=PeriodicChoices.choices
+    )
+    limit = models.IntegerField(default=1000)
+
+    class Meta:
+        verbose_name = "Token Limit"
+        verbose_name_plural = "Token Limits"
+        unique_together = [['subscription_plan', 'period']]
+
+    def __str__(self):
+        plan_name = self.subscription_plan.name if self.subscription_plan else "Default"
+        return f"{plan_name} - {self.get_period_display()}: {self.limit}"

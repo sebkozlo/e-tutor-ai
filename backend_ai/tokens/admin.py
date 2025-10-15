@@ -1,12 +1,8 @@
 from django.contrib import admin
-from .models import TokenUsage, TokenBalance
+from .models import TokenUsage, TokenLimit
 
 
-class TokenBalanceAdmin(admin.ModelAdmin):
-    list_display = ["external_user", "balance"]
-    search_fields = ["external_user__email"]
-
-
+@admin.register(TokenUsage)
 class TokenUsageAdmin(admin.ModelAdmin):
     list_display = [
         "id",
@@ -20,5 +16,7 @@ class TokenUsageAdmin(admin.ModelAdmin):
     list_filter = ["created_at"]
 
 
-admin.site.register(TokenBalance, TokenBalanceAdmin)
-admin.site.register(TokenUsage, TokenUsageAdmin)
+@admin.register(TokenLimit)
+class TokenLimitAdmin(admin.ModelAdmin):
+    list_display = ["period", "limit", "subscription_plan"]
+    search_fields = ["period"]

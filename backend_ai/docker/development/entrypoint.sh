@@ -21,4 +21,7 @@ if [ "$CREATE_SUPERUSER" = "true" ]; then
   /app/docker/scripts/django/create-superuser.sh
 fi
 
+if [ "$INIT_PLANS" = "true" ]; then
+  /app/docker/scripts/django/input_plans.sh
+fi
 exec "$@"

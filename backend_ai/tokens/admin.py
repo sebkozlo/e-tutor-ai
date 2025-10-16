@@ -18,5 +18,10 @@ class TokenUsageAdmin(admin.ModelAdmin):
 
 @admin.register(TokenLimit)
 class TokenLimitAdmin(admin.ModelAdmin):
-    list_display = ["period", "limit", "subscription_plan"]
+    list_display = [
+        "period",
+        "limit",
+        "subscription_plan__name",
+        "subscription_plan__price",
+    ]
     search_fields = ["period"]

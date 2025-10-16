@@ -22,7 +22,6 @@ def get_token_usage(request, period: str = "day"):
 
     period = period.lower()
 
-    # Walidacja okresu
     period_map = {
         "day": PeriodicChoices.DAY,
         "week": PeriodicChoices.WEEK,
@@ -33,6 +32,13 @@ def get_token_usage(request, period: str = "day"):
         raise HttpError(400, f"Invalid period. Choose: {', '.join(period_map.keys())}")
 
     period_choice = period_map[period]
-    usage, limit, exceeded = TokenUsage.check_limit(user, period_choice)
+    usage, limit, exceeded, subscription_plan = TokenUsage.check_limit(
+        user, period_choice
+    )
 
-    return TokenUsageCheckResponse(usage=usage, limit=limit, limit_exceeded=exceeded)
+    return TokenUsageCheckResponse(
+        usage=usage,
+        limit=limit,
+        limit_exceeded=exceeded,
+        subscription_plan=subscription_plan,
+    )

@@ -2,6 +2,7 @@ from django.db import models
 from core.models import ExternalUser
 from django.utils import timezone
 from core.enums import PeriodicChoices
+from django.db.models import Q
 
 
 class TokenUsage(models.Model):
@@ -48,18 +49,27 @@ class TokenUsage(models.Model):
             PeriodicChoices.WEEK: cls.get_week_usage,
             PeriodicChoices.MONTH: cls.get_month_usage,
         }
-
         usage = usage_method[period](external_user)
 
-        try:
-            limit_obj = TokenLimit.objects.get(period=period)
+        plan = external_user.subscription.plan
+        print(plan)
+        limit_obj = (
+            TokenLimit.objects.filter(period=period)
+            .filter(Q(subscription_plan=plan) | Q(subscription_plan=None))
+            .order_by("-subscription_plan")
+            .first()
+        )
+
+        if limit_obj:
             limit = limit_obj.limit
             exceeded = usage > limit
-        except TokenLimit.DoesNotExist:
+        else:
             limit = None
             exceeded = False
 
-        return usage, limit, exceeded
+        subscription_plan_name = plan.name
+
+        return usage, limit, exceeded, subscription_plan_name
 
 
 class TokenLimit(models.Model):

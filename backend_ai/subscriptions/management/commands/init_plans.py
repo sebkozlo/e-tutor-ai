@@ -1,4 +1,3 @@
-# subscriptions/management/commands/init_plans.py
 from django.core.management.base import BaseCommand
 from subscriptions.models import SubscriptionPlan
 from tokens.models import TokenLimit
@@ -16,9 +15,9 @@ class Command(BaseCommand):
                 "price": 0.00,
                 "is_free": True,
                 "token_limits": {
-                    PeriodicChoices.DAY: 500,
-                    PeriodicChoices.WEEK: 2000,
-                    PeriodicChoices.MONTH: 5000,
+                    PeriodicChoices.DAY: 2000,
+                    PeriodicChoices.WEEK: 10000,
+                    PeriodicChoices.MONTH: 100000,
                 },
             },
             {
@@ -27,9 +26,9 @@ class Command(BaseCommand):
                 "price": 9.99,
                 "is_free": False,
                 "token_limits": {
-                    PeriodicChoices.DAY: 2000,
-                    PeriodicChoices.WEEK: 10000,
-                    PeriodicChoices.MONTH: 30000,
+                    PeriodicChoices.DAY: 5000,
+                    PeriodicChoices.WEEK: 20000,
+                    PeriodicChoices.MONTH: 200000,
                 },
             },
             {
@@ -40,7 +39,7 @@ class Command(BaseCommand):
                 "token_limits": {
                     PeriodicChoices.DAY: 10000,
                     PeriodicChoices.WEEK: 50000,
-                    PeriodicChoices.MONTH: 150000,
+                    PeriodicChoices.MONTH: 300000,
                 },
             },
             {
@@ -55,22 +54,6 @@ class Command(BaseCommand):
                 },
             },
         ]
-
-        self.stdout.write("Creating default token limits...")
-        default_limits = [
-            (PeriodicChoices.DAY, 100),
-            (PeriodicChoices.WEEK, 500),
-            (PeriodicChoices.MONTH, 1000),
-        ]
-
-        for period, limit in default_limits:
-            token_limit, created = TokenLimit.objects.get_or_create(
-                subscription_plan=None, period=period, defaults={"limit": limit}
-            )
-            if created:
-                self.stdout.write(
-                    self.style.SUCCESS(f"✓ Default {period.label}: {limit:,} tokens")
-                )
 
         self.stdout.write("\nCreating subscription plans...")
         for plan_data in plans_data:

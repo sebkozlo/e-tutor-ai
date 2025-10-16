@@ -11,7 +11,7 @@ def generate_quiz_task(
     try:
         result = generate_quiz(question_count, difficulty, question_type, content)
 
-        external_user, _ = ExternalUser.objects.get_or_create(external_id=external_uuid)
+        external_user = ExternalUser.objects.get(external_id=external_uuid)
 
         quiz = Quiz.objects.create_with_token_usage(
             external_user=external_user,
@@ -29,3 +29,6 @@ def generate_quiz_task(
 
     except Exception as e:
         raise Exception(f"Quiz generation failed: {str(e)}")
+
+    except ExternalUser.DoesNotExist:
+        raise Exception(f"User {external_uuid} not found")

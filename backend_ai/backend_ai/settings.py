@@ -7,7 +7,6 @@ env = environ.Env(
     # set casting, default value
     DEBUG=(bool, False),
     SECRET_KEY=(str, "secret_key"),
-    ALLOWED_HOSTS=(list, ["*"]),
 )
 
 
@@ -17,11 +16,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Take environment variables from .env file
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "backend-ai"])
+
 # OPENAI API KEY
 OPENAI_API_KEY = env("OPENAI_API_KEY")
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env("SECRET_KEY")
@@ -37,8 +35,6 @@ STRIPE_WEBHOOK_SECRET = env("STRIPE_WEBHOOK_SECRET")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 
-ALLOWED_HOSTS = env("ALLOWED_HOSTS")
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -48,12 +44,15 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "corsheaders",
+    # my apps
     "authentication",
     "core",
-    "corsheaders",
-    "import_export",
     "quiz",
+    "tokens",
     "payments",
+    "subscriptions",
+    "customers",
 ]
 
 MIDDLEWARE = [
@@ -66,7 +65,6 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
-    # "ninja.compatibility.files.fix_request_files_middleware"
 ]
 
 REST_FRAMEWORK = {

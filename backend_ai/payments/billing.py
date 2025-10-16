@@ -9,6 +9,5 @@ def create_stripe_customer(email: str, name: str) -> stripe.Customer:
     return customer
 
 
-
 def customer_list():
     return stripe.Customer.list()

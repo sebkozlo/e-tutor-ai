@@ -4,21 +4,42 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Plan',
+            name="Plan",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(choices=[('FREE', 'Free'), ('BASIC', 'Basic'), ('PREMIUM', 'Premium'), ('ENTERPRISE', 'Enterprise')], max_length=50, unique=True)),
-                ('monthly_token_limit', models.IntegerField()),
-                ('daily_token_limit', models.IntegerField()),
-                ('price', models.DecimalField(decimal_places=2, default=0.0, max_digits=6)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(
+                        choices=[
+                            ("FREE", "Free"),
+                            ("BASIC", "Basic"),
+                            ("PREMIUM", "Premium"),
+                            ("ENTERPRISE", "Enterprise"),
+                        ],
+                        max_length=50,
+                        unique=True,
+                    ),
+                ),
+                ("monthly_token_limit", models.IntegerField()),
+                ("daily_token_limit", models.IntegerField()),
+                (
+                    "price",
+                    models.DecimalField(decimal_places=2, default=0.0, max_digits=6),
+                ),
             ],
         ),
     ]

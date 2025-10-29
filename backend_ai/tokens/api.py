@@ -1,7 +1,7 @@
 from ninja import Router
 from ninja.errors import HttpError
 from .models import TokenUsage
-from core.models import ExternalUser
+from users.models import ExternalUser
 from .schemas import TokenUsageCheckResponse
 from core.enums import PeriodicChoices
 

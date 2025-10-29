@@ -11,7 +11,10 @@ from .schemas import (
     UploadSuccess,
 )
 
-from core.services.user_service import get_external_user_from_request, get_existing_external_user
+from users.services.user_service import (
+    get_external_user_from_request,
+    get_existing_external_user,
+)
 from .tasks import generate_quiz_task
 from .models import Quiz, QuizSolution, QuestionType, DifficultyLevels, Limits
 from ninja.pagination import PageNumberPagination, paginate
@@ -20,7 +23,7 @@ from ninja.pagination import PageNumberPagination, paginate
 router = Router()
 
 
-@router.post("/quizzes")
+@router.post("/quizzes", by_alias=True)
 def generate_quiz_endpoint(request, payload: QuizRequestSchema):
     external_user = get_external_user_from_request(request)
 
@@ -78,7 +81,6 @@ def get_quiz_request_by_id(request, quiz_id: int) -> QuizRequestOutSchema:
     except Quiz.DoesNotExist:
         raise HttpError(404, "Quiz request not found.")
     return quiz_request
-
 
 
 @router.post(

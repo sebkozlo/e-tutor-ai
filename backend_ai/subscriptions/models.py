@@ -1,6 +1,5 @@
 from django.db import models
-from django.utils import timezone
-from core.models import ExternalUser
+from users.models import ExternalUser
 from core.enums import SubscriptionStatusChoices, SubscriptionIntervalChoices
 
 
@@ -14,7 +13,7 @@ class SubscriptionPlan(models.Model):
         max_length=255, unique=True, null=True, blank=True
     )
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    currency = models.CharField(max_length=10, default="PLN")
+    currency = models.CharField(max_length=10, default="pln")
     interval = models.CharField(
         max_length=10,
         choices=SubscriptionIntervalChoices.choices,

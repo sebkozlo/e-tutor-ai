@@ -1,7 +1,7 @@
 from ninja import Router
 from ninja.errors import HttpError
 from .models import TokenUsage
-from core.models import ExternalUser
+from users.models import ExternalUser
 from .schemas import TokenUsageCheckResponse
 from core.enums import PeriodicChoices
 
@@ -9,7 +9,7 @@ from core.enums import PeriodicChoices
 router = Router()
 
 
-@router.get("/usage", response=TokenUsageCheckResponse)
+@router.get("/usage", response=TokenUsageCheckResponse, by_alias=True)
 def get_token_usage(request, period: str = "day"):
     external_uuid = request.auth.get("userId")
     if not external_uuid:

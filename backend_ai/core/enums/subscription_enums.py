@@ -11,3 +11,6 @@ class SubscriptionStatusChoices(models.TextChoices):
     CANCELED = "canceled", "Canceled"
     PAST_DUE = "past_due", "Past Due"
     TRIALING = "trialing", "Trialing"
+    UNPAID = "unpaid", "Unpaid"
+    INCOMPLETE = "incomplete", "Incomplete"
+    INCOMPLETE_EXPIRED = "incomplete_expired", "Incomplete Expired"

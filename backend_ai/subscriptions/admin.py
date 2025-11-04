@@ -51,6 +51,9 @@ class SubscriptionAdmin(admin.ModelAdmin):
             SubscriptionStatusChoices.TRIALING: "blue",
             SubscriptionStatusChoices.CANCELED: "red",
             SubscriptionStatusChoices.PAST_DUE: "orange",
+            SubscriptionStatusChoices.UNPAID: "darkred",
+            SubscriptionStatusChoices.INCOMPLETE: "purple",
+            SubscriptionStatusChoices.INCOMPLETE_EXPIRED: "gray",
         }
         color = colors.get(obj.status, "black")
         return format_html(

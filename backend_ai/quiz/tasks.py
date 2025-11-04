@@ -1,7 +1,7 @@
 from celery import shared_task
 from quiz.services.quiz_generator import generate_quiz
 from .models import Quiz
-from core.models import ExternalUser
+from users.models import ExternalUser
 
 
 @shared_task

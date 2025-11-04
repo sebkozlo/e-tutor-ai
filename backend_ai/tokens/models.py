@@ -1,5 +1,5 @@
 from django.db import models
-from core.models import ExternalUser
+from users.models import ExternalUser
 from django.utils import timezone
 from core.enums import PeriodicChoices
 from django.db.models import Q

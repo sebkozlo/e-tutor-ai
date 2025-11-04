@@ -1,5 +1,4 @@
-from core.models import ExternalUser
-from customers.models import Customer
+from users.models import ExternalUser
 from subscriptions.models import Subscription, SubscriptionPlan
 from ninja.errors import HttpError
 
@@ -11,11 +10,7 @@ def get_or_create_external_user(user_id: str, email: str) -> ExternalUser:
     return external_user, created
 
 
-def setup_free_customer_and_subscription(external_user: ExternalUser, email: str):
-    Customer.objects.get_or_create(
-        external_user=external_user, defaults={"email": email}
-    )
-
+def setup_free_subscription(external_user: ExternalUser):
     free_plan = SubscriptionPlan.objects.filter(name="Free", is_free=True).first()
     if free_plan:
         Subscription.objects.get_or_create(
@@ -36,7 +31,7 @@ def get_external_user_from_request(request):
 
     external_user, created = get_or_create_external_user(user_id, email)
     if created:
-        setup_free_customer_and_subscription(external_user, email)
+        setup_free_subscription(external_user)  # No Customer creation needed
 
     return external_user
 

@@ -2,7 +2,7 @@ from django.db import models, transaction
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MinValueValidator, MaxValueValidator
 from core.enums import DifficultyLevels, QuestionType, SolutionLevels, Limits
-from core.models import ExternalUser
+from users.models import ExternalUser
 from tokens.models import TokenUsage
 
 

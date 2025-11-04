@@ -10,6 +10,7 @@ services:
     environment:
       - RUN_MIGRATIONS=true
       - CREATE_SUPERUSER=true
+      - INIT_PLANS=true
     depends_on:
       db:
         condition: service_healthy
@@ -48,6 +49,7 @@ services:
     environment:
       - RUN_MIGRATIONS=false
       - CREATE_SUPERUSER=false
+      - INIT_PLANS=false
     depends_on:
       db:
         condition: service_healthy
@@ -70,6 +72,7 @@ services:
     environment:
       - RUN_MIGRATIONS=false
       - CREATE_SUPERUSER=false
+      - INIT_PLANS=false
     depends_on:
       - celery
 

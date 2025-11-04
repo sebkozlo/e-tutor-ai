@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from django.conf import settings
 from subscriptions.models import SubscriptionPlan
 from tokens.models import TokenLimit
 from core.enums import PeriodicChoices
@@ -23,7 +24,9 @@ class Command(BaseCommand):
             {
                 "name": "Basic",
                 "description": "Great for individuals and small teams",
-                "price": 9.99,
+                "stripe_product_id": settings.STRIPE_PRODUCT_BASIC_ID,
+                "stripe_price_id": settings.STRIPE_PRICE_BASIC_MONTHLY_ID,
+                "price": 29.99,
                 "is_free": False,
                 "token_limits": {
                     PeriodicChoices.DAY: 5000,
@@ -34,7 +37,9 @@ class Command(BaseCommand):
             {
                 "name": "Pro",
                 "description": "For professionals who need advanced features",
-                "price": 29.99,
+                "stripe_product_id": settings.STRIPE_PRODUCT_PRO_ID,
+                "stripe_price_id": settings.STRIPE_PRICE_PRO_MONTHLY_ID,
+                "price": 99.99,
                 "is_free": False,
                 "token_limits": {
                     PeriodicChoices.DAY: 10000,
@@ -45,7 +50,9 @@ class Command(BaseCommand):
             {
                 "name": "Enterprise",
                 "description": "Custom solutions for large organizations",
-                "price": 99.99,
+                "stripe_product_id": settings.STRIPE_PRODUCT_ENTERPRISE_ID,
+                "stripe_price_id": settings.STRIPE_PRICE_ENTERPRISE_MONTHLY_ID,
+                "price": 199.99,
                 "is_free": False,
                 "token_limits": {
                     PeriodicChoices.DAY: 50000,

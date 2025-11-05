@@ -18,7 +18,32 @@ class Plan(models.Model):
         return self.name
 
 
-# class Customer(models.Model):
-#     user = models.OneToOneField()
-#     def __str__(self):
-#         return self.email
+class PaymentRecord(models.Model):
+    external_user = models.ForeignKey(
+        "users.ExternalUser",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="payment_records",
+    )
+
+    event_type = models.CharField(max_length=64)
+    status = models.CharField(max_length=32, null=True, blank=True)
+
+    amount = models.IntegerField(null=True, blank=True)
+    currency = models.CharField(max_length=10, null=True, blank=True)
+
+    stripe_customer_id = models.CharField(max_length=255, null=True, blank=True)
+    stripe_subscription_id = models.CharField(max_length=255, null=True, blank=True)
+    stripe_payment_intent_id = models.CharField(max_length=255, null=True, blank=True)
+    stripe_invoice_id = models.CharField(max_length=255, null=True, blank=True)
+    stripe_session_id = models.CharField(max_length=255, null=True, blank=True)
+
+    raw = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.event_type} | {self.status or '-'} | {self.stripe_session_id or self.stripe_payment_intent_id or self.stripe_invoice_id or self.stripe_subscription_id or 'n/a'}"

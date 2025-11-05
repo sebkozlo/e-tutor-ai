@@ -7,7 +7,6 @@ env = environ.Env(
     # set casting, default value
     DEBUG=(bool, False),
     SECRET_KEY=(str, "secret_key"),
-    ALLOWED_HOSTS=(list, ["*"]),
 )
 
 
@@ -17,11 +16,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Take environment variables from .env file
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "backend-ai"])
+
+FRONTEND_URL = "http://localhost:5173"
+
 # OPENAI API KEY
 OPENAI_API_KEY = env("OPENAI_API_KEY")
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env("SECRET_KEY")
@@ -29,15 +29,24 @@ SECRET_KEY = env("SECRET_KEY")
 JWT_SECRET = env("JWT_SECRET")
 
 # STRIPE_SECRET
+
 STRIPE_PUBLIC_KEY = env("STRIPE_PUBLIC_KEY")
 STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY")
 STRIPE_WEBHOOK_SECRET = env("STRIPE_WEBHOOK_SECRET")
 
+# STRIPE PRODUCT AND PRICE IDS
+STRIPE_PRODUCT_BASIC_ID = env("STRIPE_PRODUCT_BASIC_ID")
+STRIPE_PRICE_BASIC_MONTHLY_ID = env("STRIPE_PRICE_BASIC_MONTHLY_ID")
+
+STRIPE_PRODUCT_PRO_ID = env("STRIPE_PRODUCT_PRO_ID")
+STRIPE_PRICE_PRO_MONTHLY_ID = env("STRIPE_PRICE_PRO_MONTHLY_ID")
+
+STRIPE_PRODUCT_ENTERPRISE_ID = env("STRIPE_PRODUCT_ENTERPRISE_ID")
+STRIPE_PRICE_ENTERPRISE_MONTHLY_ID = env("STRIPE_PRICE_ENTERPRISE_MONTHLY_ID")
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
-
-ALLOWED_HOSTS = env("ALLOWED_HOSTS")
 
 # Application definition
 
@@ -48,12 +57,15 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "corsheaders",
+    # my apps
     "authentication",
     "core",
-    "corsheaders",
-    "import_export",
     "quiz",
+    "tokens",
     "payments",
+    "subscriptions",
+    "users",
 ]
 
 MIDDLEWARE = [
@@ -66,7 +78,6 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
-    # "ninja.compatibility.files.fix_request_files_middleware"
 ]
 
 REST_FRAMEWORK = {
@@ -79,7 +90,7 @@ ROOT_URLCONF = "backend_ai.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -125,7 +136,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]
+CORS_ALLOW_CREDENTIALS = True
+# CORS_ALLOW_ALL_ORIGINS = True
 
 LANGUAGE_CODE = "en-us"
 

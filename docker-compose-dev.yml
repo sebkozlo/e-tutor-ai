@@ -1,6 +1,6 @@
 services:
   backend_ai:
-    container_name: backend_ai
+    container_name: backend-ai
     build:
       context: backend_ai
       dockerfile: docker/development/Dockerfile
@@ -10,6 +10,7 @@ services:
     environment:
       - RUN_MIGRATIONS=true
       - CREATE_SUPERUSER=true
+      - INIT_PLANS=true
     depends_on:
       db:
         condition: service_healthy
@@ -35,7 +36,6 @@ services:
   redis:
     container_name: redis
     image: redis:8-alpine
-    restart: always
     ports:
       - '6379:6379'
 
@@ -49,6 +49,7 @@ services:
     environment:
       - RUN_MIGRATIONS=false
       - CREATE_SUPERUSER=false
+      - INIT_PLANS=false
     depends_on:
       db:
         condition: service_healthy
@@ -71,5 +72,12 @@ services:
     environment:
       - RUN_MIGRATIONS=false
       - CREATE_SUPERUSER=false
+      - INIT_PLANS=false
     depends_on:
       - celery
+
+  stripe-cli:
+    container_name: stripe_cli
+    image: stripe/stripe-cli
+    command: listen --forward-to http://backend-ai:8000/api/payments/webhook/stripe/
+    env_file: backend_ai/.env

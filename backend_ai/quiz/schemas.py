@@ -3,11 +3,7 @@ from ninja import ModelSchema
 from typing import List, Optional
 from pydantic import Field
 from .models import Quiz, QuizSolution, DifficultyLevels, QuestionType
-
-
-def to_camel(string: str) -> str:
-    parts = string.split("_")
-    return parts[0] + "".join(word.capitalize() for word in parts[1:])
+from core.utils import to_camel
 
 
 class ChoiceSchema(Schema):
@@ -20,7 +16,6 @@ class QuizResponseSchema(Schema):
     question_type: str
     options: List[str]
     correct_answer: List[str]
-
     model_config = {"alias_generator": to_camel, "populate_by_name": True}
 
 
@@ -48,7 +43,7 @@ class QuizRequestOutSchema(ModelSchema):
         model = Quiz
         model_fields = [
             "id",
-            "user_id",
+            "external_user",
             "question_count",
             "difficulty",
             "question_type",
@@ -78,7 +73,13 @@ class SolutionResponseSchema(Schema):
 class SolutionRequestOutSchema(ModelSchema):
     class Config:
         model = QuizSolution
-        model_fields = ["id", "user_id", "question", "solution_level", "created_at"]
+        model_fields = [
+            "id",
+            "external_user",
+            "question",
+            "solution_level",
+            "created_at",
+        ]
         alias_generator = to_camel
         populate_by_name = True
 

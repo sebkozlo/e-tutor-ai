@@ -1,9 +1,8 @@
-from celery import shared_task
 from openai import OpenAI
-from typing import Dict, List
+from typing import Dict
 from django.conf import settings
-from .schemas import QuizResponseListSchema, SolutionResponseSchema
-import json
+from quiz.schemas import QuizResponseListSchema, SolutionResponseSchema
+
 
 client = OpenAI()
 client.api_key = settings.OPENAI_API_KEY
@@ -12,6 +11,38 @@ client.api_key = settings.OPENAI_API_KEY
 def generate_quiz(
     question_count: int, difficulty: str, question_type: list[str], content: str
 ) -> Dict:
+    prompt = _build_prompt(question_count, difficulty, question_type, content)
+
+    response = client.responses.parse(
+        model="gpt-4o",
+        input=[
+            {
+                "role": "system",
+                "content": "Jesteś pomocnym asystentem do generowania quizów. Twoim zadaniem jest stworzenie pytań w oparciu o określony typ, trudność i temat.",
+            },
+            {"role": "user", "content": prompt},
+        ],
+        text_format=QuizResponseListSchema,
+    )
+
+    print(response)
+
+    quiz_data_serializable = response.output_parsed.dict()
+    usage_data = {}
+    if hasattr(response, "usage"):
+        usage_data = response.usage.model_dump()
+    result = {
+        "quiz_data": quiz_data_serializable,
+        "usage": usage_data,
+    }
+
+    try:
+        return result
+    except Exception as e:
+        return e
+
+
+def _build_prompt(question_count, difficulty, question_type, content) -> str:
     type_descriptions = {
         "SINGLE": "- Pytania typu 'SINGLE' powinny zawierać jedno pytanie i jedno prawidłowe rozwiązanie (jedna opcja).\n",
         "MULTI": "- Pytania typu 'MULTI' powinny zawierać jedno pytanie i 4 propozycje odpowiedzi i wiele poprawnych odpowiedzi (wielokrotny wybór).\n",
@@ -39,7 +70,6 @@ def generate_quiz(
         "ORDER": "4. Pytanie typu 'ORDER': 'Ułóż miasta w kolejności alfabetycznej: Warszawa, Paryż, Londyn'. Poprawna kolejność: Londyn, Paryż, Warszawa\n",
         "TRUE_FALSE": "5. Pytanie typu 'TRUE_FALSE': 'Warszawa jest stolicą Polski'. Odpowiedź: PRAWDA\n",
     }
-
     difficulty_descriptions = {
         "EASY": "Łatwy – proste pytania podstawowe, wymagające ogólnej wiedzy.",
         "MEDIUM": "Średni – pytania wymagające pewnej wiedzy, ale nadal dostępne.",
@@ -47,13 +77,10 @@ def generate_quiz(
         "EXPERT": "Ekspercki – pytania dla bardzo zaawansowanych, wymagające głębokiego zrozumienia.",
         "MASTER": "Mistrzowski – pytania wyjątkowo trudne, często podchwytliwe, wymagające biegłości eksperckiej.",
     }
-
     selected_descriptions = "".join([type_descriptions[t] for t in question_type])
     selected_examples = "".join([examples[t] for t in question_type])
     joined_types = ", ".join(question_type)
-
     difficulty_text = difficulty_descriptions.get(difficulty, difficulty)
-
     prompt = (
         f"Wygeneruj {question_count} pytań na poziomie trudności {difficulty} "
         f"({difficulty_text}) na temat: {content}.\n"
@@ -70,22 +97,7 @@ def generate_quiz(
         "Odpowiedzi udziel w języku polskim. "
         "Zwróć wynik jako JSON w polu 'quiz', zawierający listę pytań."
     )
-
-    response = client.responses.parse(
-        model="gpt-4o",
-        input=[
-            {
-                "role": "system",
-                "content": "Jesteś pomocnym asystentem do generowania quizów. Twoim zadaniem jest stworzenie pytań w oparciu o określony typ, trudność i temat.",
-            },
-            {"role": "user", "content": prompt},
-        ],
-        text_format=QuizResponseListSchema,
-    )
-    try:
-        return response.output_parsed
-    except Exception as e:
-        return e
+    return prompt
 
 
 def generate_solution(question: str, solution_level: int) -> Dict:

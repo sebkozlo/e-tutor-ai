@@ -4,19 +4,19 @@ from ninja.errors import HttpError
 from ninja.files import UploadedFile
 from .schemas import (
     QuizRequestSchema,
-    QuizResponseListSchema,
     SolutionResponseSchema,
     SolutionRequestSchema,
     SolutionRequestOutSchema,
-    QuizSolution,
     QuizRequestOutSchema,
     UploadSuccess,
-    TaskResponseSchema,
 )
 
-# from .services import generate_quiz, generate_solution
+from users.services.user_service import (
+    get_external_user_from_request,
+    get_existing_external_user,
+)
 from .tasks import generate_quiz_task
-from .models import Quiz, QuestionType, DifficultyLevels, Limits
+from .models import Quiz, QuizSolution, QuestionType, DifficultyLevels, Limits
 from ninja.pagination import PageNumberPagination, paginate
 
 
@@ -24,19 +24,16 @@ router = Router()
 
 
 @router.post("/quizzes", by_alias=True)
-def generate_quiz_endpoint(request, payload: QuizRequestSchema) -> Dict:
-    user_id = request.auth.get("userId")
-    if not user_id:
-        raise HttpError(401, "Authentication required.")
+def generate_quiz_endpoint(request, payload: QuizRequestSchema):
+    external_user = get_external_user_from_request(request)
+
     task = generate_quiz_task.delay(
         payload.question_count,
         payload.difficulty,
         payload.question_type,
         payload.content,
-        user_id,
+        str(external_user.external_id),
     )
-
-    Quiz.objects.create(**payload.dict(), user_id=request.auth.get("userId"))
 
     return {
         "task_id": task.id,
@@ -47,70 +44,51 @@ def generate_quiz_endpoint(request, payload: QuizRequestSchema) -> Dict:
 
 
 @router.get("/quizzes/result/{task_id}", by_alias=True)
-def get_quiz_result(request, task_id: str) -> Dict:
-    user_id = request.auth.get("userId")
-    if not user_id:
-        raise HttpError(401, "Authentication required.")
+def get_quiz_result(request, task_id: str):
+    external_user = get_existing_external_user(request)
 
-    try:
-        result = generate_quiz_task.AsyncResult(task_id)
+    result = generate_quiz_task.AsyncResult(task_id)
 
-        if result.state == "PENDING":
-            return {
-                "status": "PENDING",
-                "message": "Quiz generation is still in progress.",
-            }
-        elif result.state == "FAILURE":
-            return {"status": "FAILURE", "message": str(result.info)}
-        elif result.state == "SUCCESS":
-            task_result = result.result
-            if user_id != task_result.get("user_id"):
-                raise HttpError(403, "Forbidden: You do not have access to this task.")
-            return {
-                "status": "SUCCESS",
-                "data": task_result,
-                "message": "Quiz generation completed successfully.",
-            }
-        else:
-            return {
-                "status": result.state,
-                "message": "Quiz generation is in progress.",
-            }
-    except Exception as e:
-        raise HttpError(500, f"An error occurred: {str(e)}")
+    if result.state == "PENDING":
+        return {"status": "PENDING", "message": "Quiz generation is still in progress."}
+    elif result.state == "FAILURE":
+        return {"status": "FAILURE", "message": str(result.info)}
+    elif result.state == "SUCCESS":
+        task_result = result.result
+        if str(external_user.external_id) != task_result.get("external_user_id"):
+            raise HttpError(403, "Forbidden: You do not have access to this task.")
+        return {
+            "status": "SUCCESS",
+            "data": task_result.get("quiz"),
+            "message": "Quiz generation completed successfully.",
+        }
+    else:
+        return {"status": result.state, "message": "Quiz generation is in progress."}
 
 
-@router.get(
-    "/quizzes",
-    response=List[QuizRequestOutSchema],
-    tags=["Quiz"],
-    by_alias=True,
-)
+@router.get("/quizzes", response=List[QuizRequestOutSchema], by_alias=True)
 @paginate(PageNumberPagination, page_size=10, max_page_size=50)
 def get_all_quiz_request(request):
-    user_id = request.auth.get("userId")
-    if not user_id:
-        raise HttpError(401, "Authentication required.")
-
-    return Quiz.objects.filter(user_id=user_id).order_by("-created_at")
+    external_user = get_existing_external_user(request)
+    return Quiz.objects.filter(external_user=external_user).order_by("-created_at")
 
 
 @router.get("/quizzes/{quiz_id}", response=QuizRequestOutSchema, by_alias=True)
 def get_quiz_request_by_id(request, quiz_id: int) -> QuizRequestOutSchema:
-    user_id = request.auth.get("userId")
-
-    if not user_id:
-        raise HttpError(401, "Unauthorized")
-
+    external_user = get_existing_external_user(request)
     try:
-        quiz_request = Quiz.objects.get(id=quiz_id, user_id=user_id)
+        quiz_request = Quiz.objects.get(id=quiz_id, external_user=external_user)
     except Quiz.DoesNotExist:
         raise HttpError(404, "Quiz request not found.")
     return quiz_request
 
 
 @router.post(
-    "/solutions", response=SolutionResponseSchema, tags=["Solution"], by_alias=True
+    "/solutions",
+    response=SolutionResponseSchema,
+    tags=["Solution"],
+    by_alias=True,
+    deprecated=True,
 )
 def question_solution_endpoint(request, payload: SolutionRequestSchema) -> Dict:
     solution = generate_solution(payload.question, payload.solution_level)
@@ -123,6 +101,7 @@ def question_solution_endpoint(request, payload: SolutionRequestSchema) -> Dict:
     response=List[SolutionRequestOutSchema],
     tags=["Solution"],
     by_alias=True,
+    deprecated=True,
 )
 @paginate(PageNumberPagination, page_size=10, max_page_size=50)
 def get_all_solution_request(request) -> Dict:
@@ -137,6 +116,7 @@ def get_all_solution_request(request) -> Dict:
     response=SolutionRequestOutSchema,
     tags=["Solution"],
     by_alias=True,
+    deprecated=True,
 )
 def get_solution_request_by_id(request, solution_id: int) -> SolutionRequestOutSchema:
     user_id = request.auth.get("userId")

@@ -201,16 +201,22 @@ class StripeService:
         elif stripe_status == "unpaid":
             subscription.status = SubscriptionStatusChoices.UNPAID
 
-        subscription.cancel_at_period_end = subscription_data.get(
-            "cancel_at_period_end", False
-        )
+        subscription.cancel_at_period_end = subscription_data.get("cancel_at_period_end", False)
 
-        subscription.current_period_start = StripeService._timestamp_to_datetime(
-            subscription_data.get("current_period_start")
-        )
-        subscription.current_period_end = StripeService._timestamp_to_datetime(
-            subscription_data.get("current_period_end")
-        )
+        if subscription_data.get("items") and subscription_data["items"].get("data"):
+            first_item = subscription_data["items"]["data"][0]
+
+            new_start = StripeService._timestamp_to_datetime(
+                first_item.get("current_period_start")
+            )
+            new_end = StripeService._timestamp_to_datetime(
+                first_item.get("current_period_end")
+            )
+
+            if new_start:
+                subscription.current_period_start = new_start
+            if new_end:
+                subscription.current_period_end = new_end
 
         subscription.save()
 

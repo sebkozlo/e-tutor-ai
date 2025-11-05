@@ -31,7 +31,7 @@ class SubscriptionPlanSchema(ModelSchema):
 
 
 class ListSubscriptionPlansSchema(Schema):
-    actual_plan_id: int
+    active_plan_id: int
     plans: list[SubscriptionPlanSchema]
     model_config = {"alias_generator": to_camel, "populate_by_name": True}
 

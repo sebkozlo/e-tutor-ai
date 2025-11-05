@@ -35,7 +35,7 @@ def list_subscription_plans(request):
         for plan in plans
     ]
     return {
-        "actual_plan_id": get_existing_external_user(request).subscription.plan.id,
+        "active_plan_id": get_existing_external_user(request).subscription.plan.id,
         "plans": plan_list,
     }
 
@@ -111,10 +111,12 @@ def cancel_subscription(request: HttpRequest):
 
     try:
         stripe.Subscription.modify(
-            subscription.stripe_subscription_id, cancel_at_period_end=True
+            subscription.stripe_subscription_id,
+            cancel_at_period_end=True
         )
+
         subscription.cancel_at_period_end = True
-        subscription.save()
+        subscription.save(update_fields=['cancel_at_period_end'])
 
         return {
             "message": "Subscription will be cancelled at the end of the billing period",

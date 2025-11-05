@@ -66,9 +66,7 @@ class TokenUsage(models.Model):
             limit = None
             exceeded = False
 
-        subscription_plan_name = plan.name
-
-        return usage, limit, exceeded, subscription_plan_name
+        return usage, limit, exceeded
 
 
 class TokenLimit(models.Model):

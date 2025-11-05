@@ -1,10 +1,19 @@
 from ninja import Schema
+from typing import Optional
 from core.utils import to_camel
 
 
-class TokenUsageCheckResponse(Schema):
+class PeriodUsage(Schema):
     usage: int
-    limit: int | None
+    limit: Optional[int]
     limit_exceeded: bool
-    subscription_plan: str | None = None
+
+    model_config = {"alias_generator": to_camel, "populate_by_name": True}
+
+
+class TokenUsageResponse(Schema):
+    day: PeriodUsage
+    week: PeriodUsage
+    month: PeriodUsage
+
     model_config = {"alias_generator": to_camel, "populate_by_name": True}

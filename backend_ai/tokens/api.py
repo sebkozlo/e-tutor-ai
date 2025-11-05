@@ -2,15 +2,15 @@ from ninja import Router
 from ninja.errors import HttpError
 from .models import TokenUsage
 from users.models import ExternalUser
-from .schemas import TokenUsageCheckResponse
+from .schemas import TokenUsageResponse, PeriodUsage
 from core.enums import PeriodicChoices
 
 
 router = Router()
 
 
-@router.get("/usage", response=TokenUsageCheckResponse, by_alias=True)
-def get_token_usage(request, period: str = "day"):
+@router.get("/usage", response=TokenUsageResponse, by_alias=True)
+def get_token_usage(request):
     external_uuid = request.auth.get("userId")
     if not external_uuid:
         raise HttpError(401, "Authentication required.")
@@ -20,25 +20,24 @@ def get_token_usage(request, period: str = "day"):
     except ExternalUser.DoesNotExist:
         raise HttpError(404, "User not found.")
 
-    period = period.lower()
+    day_usage, day_limit, day_exceeded = TokenUsage.check_limit(user, PeriodicChoices.DAY)
+    week_usage, week_limit, week_exceeded = TokenUsage.check_limit(user, PeriodicChoices.WEEK)
+    month_usage, month_limit, month_exceeded = TokenUsage.check_limit(user, PeriodicChoices.MONTH)
 
-    period_map = {
-        "day": PeriodicChoices.DAY,
-        "week": PeriodicChoices.WEEK,
-        "month": PeriodicChoices.MONTH,
+    return {
+        "day": {
+            "usage": day_usage,
+            "limit": day_limit,
+            "limit_exceeded": day_exceeded,
+        },
+        "week": {
+            "usage": week_usage,
+            "limit": week_limit,
+            "limit_exceeded": week_exceeded,
+        },
+        "month": {
+            "usage": month_usage,
+            "limit": month_limit,
+            "limit_exceeded": month_exceeded,
+        }
     }
-
-    if period not in period_map:
-        raise HttpError(400, f"Invalid period. Choose: {', '.join(period_map.keys())}")
-
-    period_choice = period_map[period]
-    usage, limit, exceeded, subscription_plan = TokenUsage.check_limit(
-        user, period_choice
-    )
-
-    return TokenUsageCheckResponse(
-        usage=usage,
-        limit=limit,
-        limit_exceeded=exceeded,
-        subscription_plan=subscription_plan,
-    )

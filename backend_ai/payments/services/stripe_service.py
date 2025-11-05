@@ -167,7 +167,9 @@ class StripeService:
         )
 
         subscription.status = SubscriptionStatusChoices.CANCELED
-        subscription.cancel_at_period_end = subscription_data.get("cancel_at_period_end", False)
+        subscription.cancel_at_period_end = subscription_data.get(
+            "cancel_at_period_end", False
+        )
 
         if current_period_start:
             subscription.current_period_start = current_period_start

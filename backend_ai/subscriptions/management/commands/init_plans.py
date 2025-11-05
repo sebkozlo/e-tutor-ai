@@ -15,6 +15,7 @@ class Command(BaseCommand):
                 "description": "Perfect for getting started with basic features",
                 "price": 0.00,
                 "is_free": True,
+                "is_active": True,
                 "token_limits": {
                     PeriodicChoices.DAY: 2000,
                     PeriodicChoices.WEEK: 10000,
@@ -28,6 +29,7 @@ class Command(BaseCommand):
                 "stripe_price_id": settings.STRIPE_PRICE_BASIC_MONTHLY_ID,
                 "price": 29.99,
                 "is_free": False,
+                "is_active": True,
                 "token_limits": {
                     PeriodicChoices.DAY: 5000,
                     PeriodicChoices.WEEK: 20000,
@@ -41,6 +43,7 @@ class Command(BaseCommand):
                 "stripe_price_id": settings.STRIPE_PRICE_PRO_MONTHLY_ID,
                 "price": 99.99,
                 "is_free": False,
+                "is_active": True,
                 "token_limits": {
                     PeriodicChoices.DAY: 10000,
                     PeriodicChoices.WEEK: 50000,
@@ -54,6 +57,7 @@ class Command(BaseCommand):
                 "stripe_price_id": settings.STRIPE_PRICE_ENTERPRISE_MONTHLY_ID,
                 "price": 199.99,
                 "is_free": False,
+                "is_active": True,
                 "token_limits": {
                     PeriodicChoices.DAY: 50000,
                     PeriodicChoices.WEEK: 250000,

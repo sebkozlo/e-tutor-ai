@@ -52,7 +52,6 @@ class TokenUsage(models.Model):
         usage = usage_method[period](external_user)
 
         plan = external_user.subscription.plan
-        print(plan)
         limit_obj = (
             TokenLimit.objects.filter(period=period)
             .filter(Q(subscription_plan=plan) | Q(subscription_plan=None))

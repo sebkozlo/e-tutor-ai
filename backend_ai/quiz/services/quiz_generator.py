@@ -25,8 +25,6 @@ def generate_quiz(
         text_format=QuizResponseListSchema,
     )
 
-    print(response)
-
     quiz_data_serializable = response.output_parsed.dict()
     usage_data = {}
     if hasattr(response, "usage"):
